@@ -3,7 +3,7 @@ package chain
 import (
 	"log"
 
-	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis"
 )
 
 const connection string = "localhost:6379"
