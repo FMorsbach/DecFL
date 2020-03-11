@@ -7,13 +7,13 @@ import (
 func TestSmokeTest(t *testing.T) {
 
 	udpate := "SomeRandomUpdate"
-	
-	key, err := saveLocalUpdate(udpate)
+
+	key, err := SaveLocalUpdate(udpate)
 	if err != nil {
 		t.Error(err)
 	}
-	
-	weights, err := loadGlobalState(key)
+
+	weights, err := LoadGlobalState(key)
 	if err != nil {
 		t.Error(err)
 	}

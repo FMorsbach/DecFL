@@ -3,22 +3,37 @@ package storage
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 	"log"
 
 	"github.com/go-redis/redis/v7"
 )
 
 const connection string = "localhost:6379"
+const modelID = "model1"
 
-func main() {
-	key, err := saveLocalUpdate("Tes32t")
-	weights, err := loadGlobalState(key)
-	fmt.Println(weights)
-	_ = err
+func StoreInitialModel(config string, weights string) (configKey string, weightsKey string) {
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     connection,
+		Password: "",
+		DB:       0,
+	})
+
+	configKey = modelID + ":config"
+	err := client.Set(configKey, config, 0).Err()
+	if err != nil {
+		log.Fatal("Store initial config", err)
+	}
+
+	weightsKey = modelID + ":startWeights"
+	err = client.Set(weightsKey, weights, 0).Err()
+	if err != nil {
+		log.Fatal("Store initial weights", err)
+	}
+	return
 }
 
-func loadGlobalState(key string) (weights string, err error) {
+func LoadGlobalState(key string) (weights string, err error) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
@@ -28,7 +43,7 @@ func loadGlobalState(key string) (weights string, err error) {
 
 	weights, err = client.Get(key).Result()
 	if err == redis.Nil {
-		fmt.Printf("Key %s does not exist\n", key)
+		log.Fatalf("Key %s does not exist\n", key)
 		weights = ""
 		return
 	} else if err != nil {
@@ -36,10 +51,9 @@ func loadGlobalState(key string) (weights string, err error) {
 	}
 
 	return
-
 }
 
-func saveLocalUpdate(weights string) (key string, err error) {
+func SaveLocalUpdate(weights string) (key string, err error) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
