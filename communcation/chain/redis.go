@@ -63,7 +63,10 @@ func GlobalWeightsAddress() (globalWeightsAddress string) {
 	return
 }
 
-func WriteLocalTraingResult(key string, weights string) {
+/***
+*	Appends the address to the list of local updates
+ */
+func AppendUpdateAddress(id string, address string) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
@@ -71,7 +74,7 @@ func WriteLocalTraingResult(key string, weights string) {
 		DB:       0,
 	})
 
-	err := client.Set(key, weights, 0).Err()
+	err := client.SAdd("localUpdates", address).Err()
 	if err != nil {
 		log.Fatal(err)
 	}
