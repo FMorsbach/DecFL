@@ -11,7 +11,7 @@ import (
 func Aggregate(updates []string) (aggregatedWeights string) {
 
 	for i, update := range updates {
-		path := prefix + "testData/aggregation/weight" + strconv.Itoa(i)
+		path := prefix + "testData/aggregation/" + strconv.Itoa(i) + "_weights.in"
 		err := ioutil.WriteFile(path, []byte(update), 0644)
 		if err != nil {
 			log.Fatalf("Can't write update %d to %s. Got %s", i, path, err)

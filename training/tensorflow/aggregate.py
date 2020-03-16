@@ -14,6 +14,10 @@ def run_standalone(w, o):
     updates = []
 
     for file in absoluteFilePaths(w):
+
+        if not file.endswith("weights.in"):
+            continue
+
         with open(file, "r") as weights_file:
             weights = weights_file.read()
             weights = json.loads(weights)
