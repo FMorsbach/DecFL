@@ -53,7 +53,7 @@ func LoadGlobalState(key string) (weights string, err error) {
 	return
 }
 
-func SaveLocalUpdate(weights string) (key string, err error) {
+func StoreUpdates(weights string) (key string, err error) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
@@ -73,5 +73,23 @@ func SaveLocalUpdate(weights string) (key string, err error) {
 	log.Printf("Saved update with key %s\n", key)
 
 	err = nil
+	return
+}
+
+func LocalUpdates(addresses []string) (updates []string) {
+
+	client := redis.NewClient(&redis.Options{
+		Addr:     connection,
+		Password: "",
+		DB:       0,
+	})
+
+	for _, address := range addresses {
+		update, err := client.Get(address).Result()
+		if err != nil {
+			log.Fatal(err)
+		}
+		updates = append(updates, update)
+	}
 	return
 }

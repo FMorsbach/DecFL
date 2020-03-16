@@ -9,6 +9,7 @@ import (
 const connection string = "localhost:6379"
 const globalModelConfigKey string = "globalModelConfiguration"
 const globalModelWeightsKey string = "globalModelWeights"
+const localUpdatesKey string = "localUpdates"
 
 func DeployInitialModel(configuration string, weights string) {
 
@@ -74,10 +75,51 @@ func AppendUpdateAddress(id string, address string) {
 		DB:       0,
 	})
 
-	err := client.SAdd("localUpdates", address).Err()
+	err := client.SAdd(localUpdatesKey, address).Err()
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return
+}
+
+func LocalUpdateAddresses() (addresses []string) {
+	client := redis.NewClient(&redis.Options{
+		Addr:     connection,
+		Password: "",
+		DB:       0,
+	})
+
+	addresses, err := client.SMembers(localUpdatesKey).Result()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
+}
+
+func UpdateGlobalWeightsAddress(address string) {
+	client := redis.NewClient(&redis.Options{
+		Addr:     connection,
+		Password: "",
+		DB:       0,
+	})
+
+	err := client.Set(globalModelWeightsKey, address, 0).Err()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return
+}
+
+func CleanLocalUpdateStore() {
+	client := redis.NewClient(&redis.Options{
+		Addr:     connection,
+		Password: "",
+		DB:       0,
+	})
+
+	err := client.Del(localUpdatesKey).Err()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

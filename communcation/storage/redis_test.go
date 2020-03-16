@@ -8,7 +8,7 @@ func TestSmokeTest(t *testing.T) {
 
 	udpate := "SomeRandomUpdate"
 
-	key, err := SaveLocalUpdate(udpate)
+	key, err := StoreUpdates(udpate)
 	if err != nil {
 		t.Error(err)
 	}

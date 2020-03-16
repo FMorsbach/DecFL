@@ -1,4 +1,4 @@
-package train
+package tensorflow
 
 import (
 	"fmt"
@@ -7,11 +7,12 @@ import (
 	"os/exec"
 )
 
-const pythonPath string = "venv/bin/python"
-const scriptPath string = "train.py"
-const configPath string = "res/configuration.txt"
-const weightsPath string = "res/weights.txt"
-const outputPath string = "res/output.txt"
+const prefix string = "training/tensorflow/"
+const pythonPath string = prefix + "venv/bin/python"
+const scriptPath string = prefix + "train.py"
+const configPath string = prefix + "res/configuration.txt"
+const weightsPath string = prefix + "res/weights.txt"
+const outputPath string = prefix + "res/output.txt"
 
 func Run(configuration string, weights string) (updatedWeights string) {
 

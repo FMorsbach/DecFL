@@ -30,7 +30,7 @@ func TestUpdate(t *testing.T) {
 
 	const key string = "testLocalTrainingResult"
 	const data string = "udpatedWeights"
-	WriteLocalTraingResult(key, data)
+	AppendUpdateAddress(key, data)
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,

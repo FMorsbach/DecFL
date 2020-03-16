@@ -8,6 +8,7 @@ import numpy as np
 from tensorflow import keras
 import tensorflow as tf
 
+
 def trainModel(config, weights, x_train, y_train):
     model = keras.models.model_from_json(json.dumps(config))
     model.set_weights(weights)
@@ -21,6 +22,7 @@ def trainModel(config, weights, x_train, y_train):
 
 
 PARTITIONS = 60
+
 
 def getData():
     mnist = tf.keras.datasets.mnist
