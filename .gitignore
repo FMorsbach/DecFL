@@ -1,2 +1,4 @@
 *.idea
 training/tensorflow/venv
+training/tensorflow/res/.in
+training/tensorflow/res/.out

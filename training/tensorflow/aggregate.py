@@ -15,23 +15,28 @@ def run_standalone(w, o):
 
     for file in absoluteFilePaths(w):
 
-        if not file.endswith("weights.in"):
+        if not file.endswith("_trainingWeights.in"):
             continue
-
-        with open(file, "r") as weights_file:
-            weights = weights_file.read()
-            weights = json.loads(weights)
-            weights = [np.array(w) for w in weights]
+        try:
+            with open(file, "r") as weights_file:
+                weights = weights_file.read()
+                weights = json.loads(weights)
+                weights = [np.array(w) for w in weights]
+        except IOError:
+            print("Cant open", file, file=sys.stderr)
+            sys.exit(1)
+        except json.decoder.JSONDecodeError:
+            print("Cant parse", file, "to json", file=sys.stderr)
+            sys.exit(1)
 
         if weights is None:
-            print("Weights could not be loaded, abort.", file=sys.stderr)
+            print("Loaded weights from", file, "are empty.", file=sys.stderr)
+            sys.exit(1)
+        elif not checkWeightsFormat(weights):
+            print("Weights do not match expected format.", file=sys.stderr)
             sys.exit(1)
         else:
-            print("Weights loaded from", file)
-
-        if not checkWeightsFormat(weights):
-            print("Weights could not be parsed correctly.", file=sys.stderr)
-            sys.exit(1)
+            print("Weights loaded successfully from", file)
 
         updates.append(weights)
 

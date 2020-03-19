@@ -2,26 +2,29 @@ package tensorflow
 
 import (
 	"io/ioutil"
+	"log"
 	"testing"
 )
 
 func TestSmokeTest(t *testing.T) {
 
-	content1, err := ioutil.ReadFile("testData/aggregation/weights1.txt")
+	inputWeights0, err := ioutil.ReadFile("testData/0_trainingWeights.in")
 	if err != nil {
-		t.Error(err)
+		log.Fatal(err)
 	}
 
-	content2, err := ioutil.ReadFile("testData/aggregation/weights2.txt")
+	inputWeights1, err := ioutil.ReadFile("testData/1_trainingWeights.in")
 	if err != nil {
-		t.Error(err)
+		log.Fatal(err)
 	}
 
-	updates := []string{string(content1), string(content2)}
+	inputWeights := []string{string(inputWeights0), string(inputWeights1)}
 
-	result := Aggregate(updates)
+	result := Aggregate(inputWeights)
 
-	if result == "" {
-		t.Error("Nil")
+	outputWeights, err := ioutil.ReadFile("testData/output.out")
+
+	if result != string(outputWeights) {
+		t.Errorf("Aggregation results do not match expected weights from %s", "testData/output.out")
 	}
 }

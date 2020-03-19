@@ -34,7 +34,10 @@ func Iterate() {
 	}
 
 	// train locally
-	localUpdate := tensorflow.Run(config, weights)
+	localUpdate, err := tensorflow.Train(config, weights)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// write the update to the storage
 	updateAddress, err := storage.StoreUpdates(localUpdate)
