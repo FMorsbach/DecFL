@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSmokeTest(t *testing.T) {
+func TestAggregate(t *testing.T) {
 
 	inputWeights0, err := ioutil.ReadFile("testData/0_trainingWeights.in")
 	if err != nil {

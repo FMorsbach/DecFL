@@ -9,10 +9,16 @@ import (
 	"strconv"
 )
 
+var aggregateScript string
+
+func init() {
+	aggregateScript = prefix + "aggregate.py"
+}
+
 func Aggregate(updates []string) (aggregatedWeights string) {
 
 	for i, update := range updates {
-		path := prefix + "res/" + strconv.Itoa(i) + "_trainingWeights.in"
+		path := resourcePath + strconv.Itoa(i) + "_trainingWeights.in"
 		err := ioutil.WriteFile(path, []byte(update), 0644)
 		if err != nil {
 			log.Fatalf("Can't write update %d to %s. Got error: %s", i, path, err)
@@ -28,7 +34,7 @@ func Aggregate(updates []string) (aggregatedWeights string) {
 		}()
 	}
 
-	cmd := exec.Command(pythonPath, prefix+"aggregate.py", prefix+"res/", outputPath)
+	cmd := exec.Command(pythonPath, aggregateScript, resourcePath, outputPath)
 
 	defer func() {
 		err := os.Remove(outputPath)
