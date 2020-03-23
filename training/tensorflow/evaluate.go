@@ -11,16 +11,6 @@ type EvaluationResults struct {
 	Accuracy float64
 }
 
-type EvaluationError struct {
-	Err         error
-	Description string
-	Details     string
-}
-
-func (e EvaluationError) Error() string {
-	return e.Description + " " + e.Err.Error() + " " + e.Details
-}
-
 var evaluateScript string
 
 func init() {
@@ -31,7 +21,7 @@ func Evaluate(configuration string, weights string) (results EvaluationResults, 
 
 	err = writeModelToDisk(configuration, weights)
 	if err != nil {
-		return
+		return results, &TensorflowError{err, "Could not write model to disk", ""}
 	}
 
 	cmd := exec.Command(pythonPath, evaluateScript, configPath, weightsPath, outputPath)
@@ -39,18 +29,18 @@ func Evaluate(configuration string, weights string) (results EvaluationResults, 
 	log.Print("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		_ = out
-		return
+		return results, &TensorflowError{err, "Could not run evaluation script", string(out)}
 	}
+	log.Print("Evaluation complete")
 
-	output, err := readOutputFromDisk()
+	output, err := readUpdatesFromDisk()
 	if err != nil {
-		return
+		return results, &TensorflowError{err, "Could not read evaluation results from disk", ""}
 	}
 
 	results, err = parseOutput(output)
 	if err != nil {
-		return
+		return results, &TensorflowError{err, "Could not parse evaluation results", ""}
 	}
 
 	return
@@ -68,7 +58,7 @@ func parseOutput(input string) (result EvaluationResults, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			err = EvaluationError{r.(error), "Could not parse output", ""}
+			err = r.(error)
 		}
 	}()
 	loss := i[0].(float64)

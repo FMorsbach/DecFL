@@ -55,7 +55,10 @@ func Aggregate() {
 	updates := storage.LocalUpdates(updateAddresses)
 
 	// aggregate the local updates
-	globalWeights := tensorflow.Aggregate(updates)
+	globalWeights, err := tensorflow.Aggregate(updates)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// write the new global weights to storage
 	globalWeightsAddress, err := storage.StoreUpdates(globalWeights)

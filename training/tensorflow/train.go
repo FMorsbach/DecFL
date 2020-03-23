@@ -9,16 +9,6 @@ import (
 	"os/exec"
 )
 
-type TrainError struct {
-	Err         error
-	Description string
-	Details     string
-}
-
-func (e *TrainError) Error() string {
-	return e.Description + " " + e.Err.Error() + " " + e.Details
-}
-
 var trainScript string
 
 func init() {
@@ -36,22 +26,21 @@ func trainByFile(configuration string, weights string) (updatedWeights string, e
 
 	err = writeModelToDisk(configuration, weights)
 	if err != nil {
-		return "", &TrainError{err, "Could not write model to disk", ""}
+		return "", &TensorflowError{err, "Could not write model to disk", ""}
 	}
-	log.Println("Wrote model to disk")
 
 	cmd := exec.Command(pythonPath, trainScript, configPath, weightsPath, outputPath)
 
 	log.Print("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		return "", &TrainError{err, "Could not run training script", string(out)}
+		return "", &TensorflowError{err, "Could not run training script", string(out)}
 	}
 	log.Println("Training completed")
 
-	updatedWeights, err = readOutputFromDisk()
+	updatedWeights, err = readUpdatesFromDisk()
 	if err != nil {
-		return "", &TrainError{err, "Could not read training results from disk", ""}
+		return "", &TensorflowError{err, "Could not read training results from disk", ""}
 	}
 	log.Println("Read model back from disk")
 

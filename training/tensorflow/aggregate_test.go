@@ -20,7 +20,10 @@ func TestAggregate(t *testing.T) {
 
 	inputWeights := []string{string(inputWeights0), string(inputWeights1)}
 
-	result := Aggregate(inputWeights)
+	result, err := Aggregate(inputWeights)
+	if err != nil {
+		t.Error((err))
+	}
 
 	outputWeights, err := ioutil.ReadFile("testData/output.out")
 

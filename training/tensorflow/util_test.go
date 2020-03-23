@@ -85,7 +85,7 @@ func TestReadModelUpdatesFromDisk(t *testing.T) {
 		panic(err)
 	}
 
-	content, err := readOutputFromDisk()
+	content, err := readUpdatesFromDisk()
 	if err != nil {
 		t.Error(err)
 	}

@@ -14,6 +14,16 @@ var configPath string
 var weightsPath string
 var outputPath string
 
+type TensorflowError struct {
+	Err          error
+	Description  string
+	PythonOutput string
+}
+
+func (e *TensorflowError) Error() string {
+	return e.Description + " " + e.Err.Error() + " " + e.PythonOutput
+}
+
 func init() {
 
 	defer func() {
@@ -42,7 +52,7 @@ func init() {
 	}
 }
 
-func readOutputFromDisk() (weights string, err error) {
+func readUpdatesFromDisk() (output string, err error) {
 
 	var content []byte
 
@@ -52,7 +62,7 @@ func readOutputFromDisk() (weights string, err error) {
 	}
 
 	log.Printf("Read %d bytes from %s", len(content), outputPath)
-	weights = string(content)
+	output = string(content)
 
 	return
 }
@@ -71,6 +81,7 @@ func writeModelToDisk(configuration string, weights string) (err error) {
 	}
 	log.Printf("Wrote %d bytes as %s to disk.", len([]byte(weights)), weightsPath)
 
+	log.Println("Wrote model to disk")
 	return
 }
 

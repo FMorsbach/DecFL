@@ -15,13 +15,13 @@ func init() {
 	aggregateScript = prefix + "aggregate.py"
 }
 
-func Aggregate(updates []string) (aggregatedWeights string) {
+func Aggregate(updates []string) (aggregatedWeights string, err error) {
 
 	for i, update := range updates {
 		path := resourcePath + strconv.Itoa(i) + "_trainingWeights.in"
 		err := ioutil.WriteFile(path, []byte(update), 0644)
 		if err != nil {
-			log.Fatalf("Can't write update %d to %s. Got error: %s", i, path, err)
+			return "", &TensorflowError{err, fmt.Sprintf("Can't write update %d to %s", i, path), ""}
 		}
 		log.Printf("Wrote update %d to %s", i, path)
 
@@ -46,18 +46,15 @@ func Aggregate(updates []string) (aggregatedWeights string) {
 	log.Print("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Println(string(out))
-		log.Fatal(err)
+		return "", &TensorflowError{err, "Could not run aggregation script", string(out)}
 	}
-	log.Println("Aggregating completed")
+	log.Println("Aggregation completed")
 
-	content, err := ioutil.ReadFile(outputPath)
+	aggregatedWeights, err = readUpdatesFromDisk()
 	if err != nil {
-		log.Println(string(out))
-		log.Fatal(err)
+		return "", &TensorflowError{err, "Could not read aggregated weights from disk", ""}
 	}
-
-	aggregatedWeights = string(content)
+	log.Println("Read aggregated weights back from disk")
 
 	return
 }
