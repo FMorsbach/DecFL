@@ -3,11 +3,12 @@ package tensorflow
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
+
+	"github.com/FMorsbach/dlog"
 )
 
 var aggregateScript string
@@ -24,7 +25,7 @@ func Aggregate(updates []string) (aggregatedWeights string, err error) {
 		if err != nil {
 			return "", &TensorflowError{err, fmt.Sprintf("Can't write update %d to %s", i, path), ""}
 		}
-		log.Printf("Wrote update %d to %s", i, path)
+		dlog.Debugf("Wrote update %d to %s", i, path)
 
 		defer func() {
 			err := os.Remove(path)
@@ -44,18 +45,18 @@ func Aggregate(updates []string) (aggregatedWeights string, err error) {
 		}
 	}()
 
-	log.Print("Executing: ", cmd.Args)
+	dlog.Debug("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", &TensorflowError{err, "Could not run aggregation script", string(out)}
 	}
-	log.Println("Aggregation completed")
+	dlog.Debug("Aggregation completed")
 
 	aggregatedWeights, err = readUpdatesFromDisk()
 	if err != nil {
 		return "", &TensorflowError{err, "Could not read aggregated weights from disk", ""}
 	}
-	log.Println("Read aggregated weights back from disk")
+	dlog.Debug("Read aggregated weights back from disk")
 
 	return
 }

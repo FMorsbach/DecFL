@@ -3,9 +3,10 @@ package tensorflow
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/FMorsbach/dlog"
 )
 
 type EvaluationResults struct {
@@ -32,12 +33,12 @@ func Evaluate(configuration string, weights string) (results EvaluationResults, 
 
 	cmd := exec.Command(pythonPath, evaluateScript, configPath, weightsPath, outputPath)
 
-	log.Print("Executing: ", cmd.Args)
+	dlog.Debug("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return results, &TensorflowError{err, "Could not run evaluation script", string(out)}
 	}
-	log.Print("Evaluation complete")
+	dlog.Debug("Evaluation complete")
 
 	output, err := readUpdatesFromDisk()
 	if err != nil {

@@ -2,20 +2,21 @@ package tensorflow
 
 import (
 	"io/ioutil"
-	"log"
 	"testing"
+
+	"github.com/FMorsbach/dlog"
 )
 
 func TestAggregate(t *testing.T) {
 
 	inputWeights0, err := ioutil.ReadFile("testData/0_trainingWeights.in")
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	inputWeights1, err := ioutil.ReadFile("testData/1_trainingWeights.in")
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	inputWeights := []string{string(inputWeights0), string(inputWeights1)}

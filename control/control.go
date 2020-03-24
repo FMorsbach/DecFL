@@ -1,13 +1,13 @@
 package control
 
 import (
-	"log"
 	"time"
 
 	"github.com/FMorsbach/DecFL/communcation/chain"
 	"github.com/FMorsbach/DecFL/communcation/storage"
 	"github.com/FMorsbach/DecFL/models/MNIST"
 	"github.com/FMorsbach/DecFL/training/tensorflow"
+	"github.com/FMorsbach/dlog"
 )
 
 func Initialize() (trainingsID string, err error) {
@@ -30,7 +30,7 @@ func Iterate() (err error) {
 	// train locally
 	localUpdate, err := tensorflow.Train(config, weights)
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	// write the update to the storage
@@ -53,13 +53,13 @@ func Aggregate() (err error) {
 	// aggregate the local updates
 	globalWeights, err := tensorflow.Aggregate(updates)
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	// write the new global weights to storage
 	globalWeightsAddress, err := storage.StoreUpdates(globalWeights)
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	// write the new global weights storage address to the chain

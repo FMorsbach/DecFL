@@ -5,9 +5,10 @@ out in python rather than go.
 package tensorflow
 
 import (
-	"log"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/FMorsbach/dlog"
 )
 
 var trainScript string
@@ -32,18 +33,18 @@ func trainByFile(configuration string, weights string) (updatedWeights string, e
 
 	cmd := exec.Command(pythonPath, trainScript, configPath, weightsPath, outputPath)
 
-	log.Print("Executing: ", cmd.Args)
+	dlog.Debugln("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", &TensorflowError{err, "Could not run training script", string(out)}
 	}
-	log.Println("Training completed")
+	dlog.Debugln("Training completed")
 
 	updatedWeights, err = readUpdatesFromDisk()
 	if err != nil {
 		return "", &TensorflowError{err, "Could not read training results from disk", ""}
 	}
-	log.Println("Read model back from disk")
+	dlog.Debugln("Read model back from disk")
 
 	cleanUpRessources()
 	return

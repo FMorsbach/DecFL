@@ -3,9 +3,10 @@ package tensorflow
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
+
+	"github.com/FMorsbach/dlog"
 )
 
 var prefix string = findPrefix()
@@ -29,7 +30,7 @@ func findPrefix() string {
 
 	project_root, exists := os.LookupEnv("DECFL_ROOT")
 	if !exists {
-		log.Fatal("DECFL_ROOT is not set.")
+		dlog.Fatal("DECFL_ROOT is not set.")
 	}
 
 	prefixes := []string{
@@ -71,7 +72,7 @@ func readUpdatesFromDisk() (output string, err error) {
 		return
 	}
 
-	log.Printf("Read %d bytes from %s", len(content), outputPath)
+	dlog.Debugf("Read %d bytes from %s", len(content), outputPath)
 	output = string(content)
 
 	return
@@ -83,15 +84,15 @@ func writeModelToDisk(configuration string, weights string) (err error) {
 	if err != nil {
 		return
 	}
-	log.Printf("Wrote %d bytes as %s to disk.", len([]byte(configuration)), configPath)
+	dlog.Debugf("Wrote %d bytes as %s to disk.", len([]byte(configuration)), configPath)
 
 	ioutil.WriteFile(weightsPath, []byte(weights), 0644)
 	if err != nil {
 		return
 	}
-	log.Printf("Wrote %d bytes as %s to disk.", len([]byte(weights)), weightsPath)
+	dlog.Debugf("Wrote %d bytes as %s to disk.", len([]byte(weights)), weightsPath)
 
-	log.Println("Wrote model to disk")
+	dlog.Debugln("Wrote model to disk")
 	return
 }
 

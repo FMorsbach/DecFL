@@ -3,8 +3,8 @@ package storage
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"log"
 
+	"github.com/FMorsbach/dlog"
 	"github.com/go-redis/redis"
 )
 
@@ -22,13 +22,13 @@ func StoreInitialModel(config string, weights string) (configKey string, weights
 	configKey = modelID + ":config"
 	err := client.Set(configKey, config, 0).Err()
 	if err != nil {
-		log.Fatal("Store initial config", err)
+		dlog.Fatal("Store initial config", err)
 	}
 
 	weightsKey = modelID + ":startWeights"
 	err = client.Set(weightsKey, weights, 0).Err()
 	if err != nil {
-		log.Fatal("Store initial weights", err)
+		dlog.Fatal("Store initial weights", err)
 	}
 	return
 }
@@ -43,7 +43,7 @@ func LoadGlobalState(key string) (weights string, err error) {
 
 	weights, err = client.Get(key).Result()
 	if err == redis.Nil {
-		log.Fatalf("Key %s does not exist\n", key)
+		dlog.Fatalf("Key %s does not exist\n", key)
 		weights = ""
 		return
 	} else if err != nil {
@@ -70,7 +70,7 @@ func StoreUpdates(weights string) (key string, err error) {
 		return
 	}
 
-	log.Printf("Saved update with key %s\n", key)
+	dlog.Debugf("Saved update with key %s\n", key)
 
 	err = nil
 	return
@@ -87,7 +87,7 @@ func LocalUpdates(addresses []string) (updates []string) {
 	for _, address := range addresses {
 		update, err := client.Get(address).Result()
 		if err != nil {
-			log.Fatal(err)
+			dlog.Fatal(err)
 		}
 		updates = append(updates, update)
 	}

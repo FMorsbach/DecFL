@@ -1,8 +1,7 @@
 package chain
 
 import (
-	"log"
-
+	"github.com/FMorsbach/dlog"
 	"github.com/go-redis/redis"
 )
 
@@ -21,12 +20,12 @@ func DeployInitialModel(configuration string, weights string) {
 
 	err := client.Set(globalModelConfigKey, configuration, 0).Err()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	err = client.Set(globalModelWeightsKey, weights, 0).Err()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	return
@@ -42,7 +41,7 @@ func ModelConfigurationAddress() (configAddress string) {
 
 	configAddress, err := client.Get(globalModelConfigKey).Result()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	return
@@ -58,7 +57,7 @@ func GlobalWeightsAddress() (globalWeightsAddress string) {
 
 	globalWeightsAddress, err := client.Get(globalModelWeightsKey).Result()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	return
@@ -77,7 +76,7 @@ func AppendUpdateAddress(id string, address string) {
 
 	err := client.SAdd(localUpdatesKey, address).Err()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	return
@@ -92,7 +91,7 @@ func LocalUpdateAddresses() (addresses []string) {
 
 	addresses, err := client.SMembers(localUpdatesKey).Result()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 	return
 }
@@ -106,7 +105,7 @@ func SetGlobalWeightsAddress(address string) {
 
 	err := client.Set(globalModelWeightsKey, address, 0).Err()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 	return
 }
@@ -120,6 +119,6 @@ func CleanLocalUpdateStore() {
 
 	err := client.Del(localUpdatesKey).Err()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 }

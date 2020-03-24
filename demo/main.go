@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/FMorsbach/DecFL/control"
+	"github.com/FMorsbach/dlog"
 )
 
 // TODO: make CL argument
@@ -22,7 +22,7 @@ func main() {
 
 	_, err := control.Initialize()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	status, err := control.Status()
@@ -31,13 +31,13 @@ func main() {
 	for i := 0; i < CLIENTS; i++ {
 		err = control.Iterate()
 		if err != nil {
-			log.Fatal(err)
+			dlog.Fatal(err)
 		}
 	}
 
 	err = control.Aggregate()
 	if err != nil {
-		log.Fatal(err)
+		dlog.Fatal(err)
 	}
 
 	status, err = control.Status()

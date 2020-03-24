@@ -2,9 +2,10 @@ package tensorflow
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"testing"
+
+	"github.com/FMorsbach/dlog"
 )
 
 var testConfiguration string
@@ -23,6 +24,8 @@ func init() {
 		panic(err)
 	}
 	testWeights = string(content)
+
+	dlog.SetDebug(false)
 }
 
 func TestCleanUpRessources(t *testing.T) {
@@ -32,7 +35,7 @@ func TestCleanUpRessources(t *testing.T) {
 	for _, path := range files {
 		err := ioutil.WriteFile(path, []byte("RandomData"), 0644)
 		if err != nil {
-			log.Fatal(err)
+			dlog.Fatal(err)
 		}
 	}
 
