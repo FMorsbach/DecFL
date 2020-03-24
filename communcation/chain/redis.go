@@ -97,7 +97,7 @@ func LocalUpdateAddresses() (addresses []string) {
 	return
 }
 
-func UpdateGlobalWeightsAddress(address string) {
+func SetGlobalWeightsAddress(address string) {
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
 		Password: "",

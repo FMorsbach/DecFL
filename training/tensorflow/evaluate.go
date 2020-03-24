@@ -2,8 +2,10 @@ package tensorflow
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os/exec"
+	"path/filepath"
 )
 
 type EvaluationResults struct {
@@ -11,10 +13,14 @@ type EvaluationResults struct {
 	Accuracy float64
 }
 
+func (e EvaluationResults) String() string {
+	return fmt.Sprintf("Loss: %f - Accuracy %f", e.Loss, e.Accuracy)
+}
+
 var evaluateScript string
 
 func init() {
-	evaluateScript = prefix + "evaluate.py"
+	evaluateScript = filepath.Join(prefix, "evaluate.py")
 }
 
 func Evaluate(configuration string, weights string) (results EvaluationResults, err error) {

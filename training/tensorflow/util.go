@@ -5,9 +5,10 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 )
 
-var prefix string
+var prefix string = findPrefix()
 var pythonPath string
 var resourcePath string
 var configPath string
@@ -21,35 +22,44 @@ type TensorflowError struct {
 }
 
 func (e *TensorflowError) Error() string {
-	return e.Description + " " + e.Err.Error() + " " + e.PythonOutput
+	return e.Description + " " + e.Err.Error() + "\n" + e.PythonOutput
+}
+
+func findPrefix() string {
+
+	project_root, exists := os.LookupEnv("DECFL_ROOT")
+	if !exists {
+		log.Fatal("DECFL_ROOT is not set.")
+	}
+
+	prefixes := []string{
+		"",
+		filepath.Join(project_root, "training/tensorflow"),
+	}
+
+	for _, pre := range prefixes {
+		if _, err := os.Stat(filepath.Join(pre, "venv/bin/python")); err == nil {
+			return pre
+		} else if os.IsNotExist(err) {
+			continue
+		} else {
+			panic(err)
+		}
+	}
+
+	panic("Cant find python environment for training")
 }
 
 func init() {
 
 	defer func() {
-		pythonPath = prefix + "venv/bin/python"
-		resourcePath = prefix + "res/"
-		configPath = resourcePath + "configuration.in"
-		weightsPath = resourcePath + "weights.in"
-		outputPath = resourcePath + "output.out"
+		pythonPath = filepath.Join(prefix, "venv/bin/python")
+		resourcePath = filepath.Join(prefix, "res/")
+		configPath = filepath.Join(resourcePath, "configuration.in")
+		weightsPath = filepath.Join(resourcePath, "weights.in")
+		outputPath = filepath.Join(resourcePath, "output.out")
 	}()
 
-	// Check if python is reachable without prefix
-	if _, err := os.Stat("venv/bin/python"); err == nil {
-		return
-	} else if !os.IsNotExist(err) {
-		panic(err)
-	}
-
-	// python is not found, check if prefix helps
-	if _, err := os.Stat("training/tensorflow/venv/bin/python"); err == nil {
-		prefix = "training/tensorflow/"
-		return
-	} else if os.IsNotExist(err) {
-		panic("Cant find python environment for training")
-	} else {
-		panic(err)
-	}
 }
 
 func readUpdatesFromDisk() (output string, err error) {

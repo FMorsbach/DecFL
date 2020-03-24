@@ -3,12 +3,21 @@ package MNIST
 import (
 	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 )
+
+func init() {
+	if _, exists := os.LookupEnv("DECFL_ROOT"); !exists {
+		log.Fatal("DECFL_ROOT is not set.")
+	}
+}
 
 func GenerateInitialModel() (configuration string, weights string) {
 
-	configuration = loadDataFromDisk("models/MNIST/configuration.txt")
-	weights = loadDataFromDisk("models/MNIST/weights.txt")
+	program_root := os.Getenv("DECFL_ROOT")
+	configuration = loadDataFromDisk(filepath.Join(program_root, "models/MNIST/configuration.txt"))
+	weights = loadDataFromDisk(filepath.Join(program_root, "models/MNIST/weights.txt"))
 	return
 }
 

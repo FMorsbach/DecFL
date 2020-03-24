@@ -7,12 +7,13 @@ package tensorflow
 import (
 	"log"
 	"os/exec"
+	"path/filepath"
 )
 
 var trainScript string
 
 func init() {
-	trainScript = prefix + "train.py"
+	trainScript = filepath.Join(prefix, "train.py")
 }
 
 // Trains the supplied model with local data and returns the updated weights

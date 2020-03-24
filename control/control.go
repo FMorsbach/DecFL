@@ -10,27 +10,21 @@ import (
 	"github.com/FMorsbach/DecFL/training/tensorflow"
 )
 
-func Initialize() {
+func Initialize() (trainingsID string, err error) {
+
 	config, weights := MNIST.GenerateInitialModel()
 
 	configAddress, weightsAddress := storage.StoreInitialModel(config, weights)
 	chain.DeployInitialModel(configAddress, weightsAddress)
+
+	return
 }
 
-func Iterate() {
-	// load the storage addresses from the chain
-	configAddress := chain.ModelConfigurationAddress()
-	weightsAddress := chain.GlobalWeightsAddress()
+func Iterate() (err error) {
 
-	// load the model from the storage
-	config, err := storage.LoadGlobalState(configAddress)
+	config, weights, err := globalModel()
 	if err != nil {
-		log.Fatal(err)
-	}
-
-	weights, err := storage.LoadGlobalState(weightsAddress)
-	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	// train locally
@@ -45,9 +39,11 @@ func Iterate() {
 	// write the address of the stored update to the chain
 	chain.AppendUpdateAddress(string(time.Now().Unix()), updateAddress)
 
+	return
 }
 
-func Aggregate() {
+func Aggregate() (err error) {
+
 	// load the local udpate addresses from the chain
 	updateAddresses := chain.LocalUpdateAddresses()
 
@@ -67,8 +63,50 @@ func Aggregate() {
 	}
 
 	// write the new global weights storage address to the chain
-	chain.UpdateGlobalWeightsAddress(globalWeightsAddress)
+	chain.SetGlobalWeightsAddress(globalWeightsAddress)
 
 	// empty the local update storage
 	chain.CleanLocalUpdateStore()
+
+	return
+}
+
+func Status() (status string, err error) {
+
+	config, weights, err := globalModel()
+	if err != nil {
+		return "", err
+	}
+
+	results, err := tensorflow.Evaluate(config, weights)
+	if err != nil {
+		return "", err
+	}
+
+	status = results.String()
+	return
+}
+
+func CleanUpEnvironment() {
+	//cleanUpStorage()
+	//cleanUpChain()
+}
+
+func globalModel() (config string, weights string, err error) {
+	// load the storage addresses from the chain
+	configAddress := chain.ModelConfigurationAddress()
+	weightsAddress := chain.GlobalWeightsAddress()
+
+	// load the model from the storage
+	config, err = storage.LoadGlobalState(configAddress)
+	if err != nil {
+		return "", "", err
+	}
+
+	weights, err = storage.LoadGlobalState(weightsAddress)
+	if err != nil {
+		return "", "", err
+	}
+
+	return
 }

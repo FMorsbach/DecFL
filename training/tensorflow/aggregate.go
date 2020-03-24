@@ -6,19 +6,20 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 )
 
 var aggregateScript string
 
 func init() {
-	aggregateScript = prefix + "aggregate.py"
+	aggregateScript = filepath.Join(prefix, "aggregate.py")
 }
 
 func Aggregate(updates []string) (aggregatedWeights string, err error) {
 
 	for i, update := range updates {
-		path := resourcePath + strconv.Itoa(i) + "_trainingWeights.in"
+		path := filepath.Join(resourcePath, strconv.Itoa(i)+"_trainingWeights.in")
 		err := ioutil.WriteFile(path, []byte(update), 0644)
 		if err != nil {
 			return "", &TensorflowError{err, fmt.Sprintf("Can't write update %d to %s", i, path), ""}
