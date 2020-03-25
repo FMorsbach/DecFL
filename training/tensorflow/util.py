@@ -52,7 +52,7 @@ def getRandomSetOfData():
 
     mnist = tf.keras.datasets.mnist
     (x_train, y_train), (_, _) = mnist.load_data()
-    partition = random.randint(0, partitions)
+    partition = random.randint(0, partitions-1)
     x_train = [x for x in np.split(x_train, partitions)][partition]
     y_train = [y for y in np.split(y_train, partitions)][partition]
     x_train = x_train / 255.0
