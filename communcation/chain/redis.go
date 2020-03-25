@@ -6,9 +6,12 @@ import (
 )
 
 const connection string = "localhost:6379"
+
 const globalModelConfigKey string = "globalModelConfiguration"
 const globalModelWeightsKey string = "globalModelWeights"
 const localUpdatesKey string = "localUpdates"
+const iterationKey string = "iteration"
+const modelIdentifierKey string = "modelIdentifier"
 
 func DeployInitialModel(configuration string, weights string) {
 
