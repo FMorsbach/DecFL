@@ -6,6 +6,7 @@ import (
 	"github.com/FMorsbach/DecFL/communcation/chain"
 	"github.com/FMorsbach/DecFL/communcation/storage"
 	"github.com/FMorsbach/DecFL/models/MNIST"
+	"github.com/FMorsbach/DecFL/training"
 	"github.com/FMorsbach/DecFL/training/tensorflow"
 	"github.com/FMorsbach/dlog"
 )
@@ -71,19 +72,18 @@ func Aggregate() (err error) {
 	return
 }
 
-func Status() (status string, err error) {
+func Status() (status training.EvaluationResults, err error) {
 
 	config, weights, err := globalModel()
 	if err != nil {
-		return "", err
+		return
 	}
 
-	results, err := tensorflow.Evaluate(config, weights)
+	status, err = tensorflow.Evaluate(config, weights)
 	if err != nil {
-		return "", err
+		return
 	}
 
-	status = results.String()
 	return
 }
 

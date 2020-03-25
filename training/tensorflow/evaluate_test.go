@@ -2,11 +2,13 @@ package tensorflow
 
 import (
 	"testing"
+
+	"github.com/FMorsbach/DecFL/training"
 )
 
 func TestEvaluate(t *testing.T) {
 
-	expectedResult := EvaluationResults{13.646389878750453, 0.9757}
+	expectedResult := training.EvaluationResults{13.646389878750453, 0.9757}
 
 	result, err := Evaluate(testConfiguration, testWeights)
 
@@ -26,7 +28,7 @@ func TestEvaluate(t *testing.T) {
 func TestParseOutput(t *testing.T) {
 
 	m := "[13.646389878750453, 0.9757]"
-	expectedResult := EvaluationResults{13.646389878750453, 0.9757}
+	expectedResult := training.EvaluationResults{13.646389878750453, 0.9757}
 
 	result, err := parseOutput(m)
 	if err != nil {

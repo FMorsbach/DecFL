@@ -2,21 +2,12 @@ package tensorflow
 
 import (
 	"encoding/json"
-	"fmt"
 	"os/exec"
 	"path/filepath"
 
+	"github.com/FMorsbach/DecFL/training"
 	"github.com/FMorsbach/dlog"
 )
-
-type EvaluationResults struct {
-	Loss     float64
-	Accuracy float64
-}
-
-func (e EvaluationResults) String() string {
-	return fmt.Sprintf("Loss: %f - Accuracy %f", e.Loss, e.Accuracy)
-}
 
 var evaluateScript string
 
@@ -24,7 +15,7 @@ func init() {
 	evaluateScript = filepath.Join(prefix, "evaluate.py")
 }
 
-func Evaluate(configuration string, weights string) (results EvaluationResults, err error) {
+func Evaluate(configuration string, weights string) (results training.EvaluationResults, err error) {
 
 	defer cleanUpRessources()
 
@@ -55,7 +46,7 @@ func Evaluate(configuration string, weights string) (results EvaluationResults, 
 	return
 }
 
-func parseOutput(input string) (result EvaluationResults, err error) {
+func parseOutput(input string) (result training.EvaluationResults, err error) {
 
 	var i []interface{}
 
@@ -73,6 +64,6 @@ func parseOutput(input string) (result EvaluationResults, err error) {
 	loss := i[0].(float64)
 	accuracy := i[1].(float64)
 
-	result = EvaluationResults{loss, accuracy}
+	result = training.EvaluationResults{loss, accuracy}
 	return
 }

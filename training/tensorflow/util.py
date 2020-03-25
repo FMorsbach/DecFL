@@ -48,7 +48,7 @@ def evaluateModel(config, weights):
 
 
 def getRandomSetOfData():
-    partitions = 60
+    partitions = 30
 
     mnist = tf.keras.datasets.mnist
     (x_train, y_train), (_, _) = mnist.load_data()
