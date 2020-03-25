@@ -26,6 +26,8 @@ func Train(configuration string, weights string) (updatedWeights string, err err
 
 func trainByFile(configuration string, weights string) (updatedWeights string, err error) {
 
+	defer cleanUpRessources()
+
 	err = writeModelToDisk(configuration, weights)
 	if err != nil {
 		return "", &TensorflowError{err, "Could not write model to disk", ""}
@@ -46,6 +48,5 @@ func trainByFile(configuration string, weights string) (updatedWeights string, e
 	}
 	dlog.Debugln("Read model back from disk")
 
-	cleanUpRessources()
 	return
 }

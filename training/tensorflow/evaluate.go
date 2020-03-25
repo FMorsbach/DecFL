@@ -26,6 +26,8 @@ func init() {
 
 func Evaluate(configuration string, weights string) (results EvaluationResults, err error) {
 
+	defer cleanUpRessources()
+
 	err = writeModelToDisk(configuration, weights)
 	if err != nil {
 		return results, &TensorflowError{err, "Could not write model to disk", ""}

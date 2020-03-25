@@ -19,6 +19,8 @@ func init() {
 
 func Aggregate(updates []string) (aggregatedWeights string, err error) {
 
+	defer cleanUpRessources()
+
 	for i, update := range updates {
 		path := filepath.Join(resourcePath, strconv.Itoa(i)+"_trainingWeights.in")
 		err := ioutil.WriteFile(path, []byte(update), 0644)
