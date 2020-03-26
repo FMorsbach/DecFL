@@ -19,10 +19,12 @@ func init() {
 	// TODO: Check if storage reachable
 
 	dlog.SetDebug(false)
-	chain.EnableDebug(false)
-	storage.EnableDebug(true)
-	tensorflow.EnableDebug(false)
+	dlog.SetPrefix("Main: ")
 
+	chain.EnableDebug(false)
+	storage.EnableDebug(false)
+	tensorflow.EnableDebug(false)
+	control.EnableDebug(true)
 }
 
 func main() {
