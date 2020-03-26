@@ -25,7 +25,7 @@ func init() {
 	}
 	testWeights = string(content)
 
-	dlog.SetDebug(false)
+	EnableDebug(false)
 }
 
 func TestCleanUpRessources(t *testing.T) {

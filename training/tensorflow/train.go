@@ -7,8 +7,6 @@ package tensorflow
 import (
 	"os/exec"
 	"path/filepath"
-
-	"github.com/FMorsbach/dlog"
 )
 
 var trainScript string
@@ -32,21 +30,22 @@ func trainByFile(configuration string, weights string) (updatedWeights string, e
 	if err != nil {
 		return "", &TensorflowError{err, "Could not write model to disk", ""}
 	}
+	logger.Debugln("Wrote model to disk")
 
 	cmd := exec.Command(pythonPath, trainScript, configPath, weightsPath, outputPath)
 
-	dlog.Debugln("Executing: ", cmd.Args)
+	logger.Debugln("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return "", &TensorflowError{err, "Could not run training script", string(out)}
 	}
-	dlog.Debugln("Training completed")
+	logger.Debugln("Training completed")
 
 	updatedWeights, err = readUpdatesFromDisk()
 	if err != nil {
 		return "", &TensorflowError{err, "Could not read training results from disk", ""}
 	}
-	dlog.Debugln("Read model back from disk")
+	logger.Debugln("Read model back from disk")
 
 	return
 }

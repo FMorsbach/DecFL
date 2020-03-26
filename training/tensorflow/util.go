@@ -3,6 +3,7 @@ package tensorflow
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -15,6 +16,8 @@ var resourcePath string
 var configPath string
 var weightsPath string
 var outputPath string
+
+var logger = dlog.New(os.Stderr, "", log.LstdFlags|log.Lshortfile, false)
 
 type TensorflowError struct {
 	Err          error
@@ -30,7 +33,7 @@ func findPrefix() string {
 
 	project_root, exists := os.LookupEnv("DECFL_ROOT")
 	if !exists {
-		dlog.Fatal("DECFL_ROOT is not set.")
+		logger.Fatal("DECFL_ROOT is not set.")
 	}
 
 	prefixes := []string{
@@ -53,14 +56,15 @@ func findPrefix() string {
 
 func init() {
 
-	defer func() {
-		pythonPath = filepath.Join(prefix, "venv/bin/python")
-		resourcePath = filepath.Join(prefix, "res/")
-		configPath = filepath.Join(resourcePath, "configuration.in")
-		weightsPath = filepath.Join(resourcePath, "weights.in")
-		outputPath = filepath.Join(resourcePath, "output.out")
-	}()
+	pythonPath = filepath.Join(prefix, "venv/bin/python")
+	resourcePath = filepath.Join(prefix, "res/")
+	configPath = filepath.Join(resourcePath, "configuration.in")
+	weightsPath = filepath.Join(resourcePath, "weights.in")
+	outputPath = filepath.Join(resourcePath, "output.out")
+}
 
+func EnableDebug(b bool) {
+	logger.SetDebug(b)
 }
 
 func readUpdatesFromDisk() (output string, err error) {
@@ -72,7 +76,7 @@ func readUpdatesFromDisk() (output string, err error) {
 		return
 	}
 
-	dlog.Debugf("Read %d bytes from %s", len(content), outputPath)
+	logger.Debugf("Read %d bytes from %s", len(content), outputPath)
 	output = string(content)
 
 	return
@@ -84,15 +88,14 @@ func writeModelToDisk(configuration string, weights string) (err error) {
 	if err != nil {
 		return
 	}
-	dlog.Debugf("Wrote %d bytes as %s to disk.", len([]byte(configuration)), configPath)
+	logger.Debugf("Wrote %d bytes as %s to disk.", len([]byte(configuration)), configPath)
 
 	ioutil.WriteFile(weightsPath, []byte(weights), 0644)
 	if err != nil {
 		return
 	}
-	dlog.Debugf("Wrote %d bytes as %s to disk.", len([]byte(weights)), weightsPath)
+	logger.Debugf("Wrote %d bytes as %s to disk.", len([]byte(weights)), weightsPath)
 
-	dlog.Debugln("Wrote model to disk")
 	return
 }
 
@@ -105,4 +108,5 @@ func cleanUpRessources() {
 			panic(fmt.Sprintf("Tried deleting %s after training but got %s", res, err))
 		}
 	}
+	logger.Debug("Cleaned up resources from disk")
 }

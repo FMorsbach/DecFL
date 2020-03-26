@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 
 	"github.com/FMorsbach/DecFL/training"
-	"github.com/FMorsbach/dlog"
 )
 
 var evaluateScript string
@@ -23,15 +22,16 @@ func Evaluate(configuration string, weights string) (results training.Evaluation
 	if err != nil {
 		return results, &TensorflowError{err, "Could not write model to disk", ""}
 	}
+	logger.Debugln("Wrote model to disk")
 
 	cmd := exec.Command(pythonPath, evaluateScript, configPath, weightsPath, outputPath)
 
-	dlog.Debug("Executing: ", cmd.Args)
+	logger.Debug("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		return results, &TensorflowError{err, "Could not run evaluation script", string(out)}
 	}
-	dlog.Debug("Evaluation complete")
+	logger.Debug("Evaluation complete")
 
 	output, err := readUpdatesFromDisk()
 	if err != nil {
@@ -42,6 +42,8 @@ func Evaluate(configuration string, weights string) (results training.Evaluation
 	if err != nil {
 		return results, &TensorflowError{err, "Could not parse evaluation results", ""}
 	}
+
+	logger.Debug("Read and parsed results back from disk")
 
 	return
 }
@@ -64,6 +66,6 @@ func parseOutput(input string) (result training.EvaluationResults, err error) {
 	loss := i[0].(float64)
 	accuracy := i[1].(float64)
 
-	result = training.EvaluationResults{loss, accuracy}
+	result = training.EvaluationResults{Loss: loss, Accuracy: accuracy}
 	return
 }
