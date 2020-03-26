@@ -35,7 +35,7 @@ func Iterate() (err error) {
 	}
 
 	// write the update to the storage
-	updateAddress, err := storage.StoreUpdates(localUpdate)
+	updateAddress, err := storage.StoreUpdate(localUpdate)
 
 	// write the address of the stored update to the chain
 	chain.AppendUpdateAddress(string(time.Now().Unix()), updateAddress)
@@ -58,7 +58,7 @@ func Aggregate() (err error) {
 	}
 
 	// write the new global weights to storage
-	globalWeightsAddress, err := storage.StoreUpdates(globalWeights)
+	globalWeightsAddress, err := storage.StoreUpdate(globalWeights)
 	if err != nil {
 		dlog.Fatal(err)
 	}

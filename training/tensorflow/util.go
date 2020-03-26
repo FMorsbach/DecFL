@@ -17,7 +17,7 @@ var configPath string
 var weightsPath string
 var outputPath string
 
-var logger = dlog.New(os.Stderr, "", log.LstdFlags|log.Lshortfile, false)
+var logger = dlog.New(os.Stderr, "Training - TF: ", log.LstdFlags, false)
 
 type TensorflowError struct {
 	Err          error

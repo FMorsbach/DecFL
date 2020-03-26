@@ -1,5 +1,12 @@
 package chain
 
+import (
+	"log"
+	"os"
+
+	"github.com/FMorsbach/dlog"
+)
+
 type storageAddress string
 type trainerIdentification string
 
@@ -11,4 +18,10 @@ type Chain interface {
 	SubmitLocalUpdate(trainer trainerIdentification, address storageAddress) (err error)
 	LocalUpdateAddresses() (localUpdateAddresses []storageAddress, err error)
 	ClearLocalUpdateAddresses() (err error)
+}
+
+var logger = dlog.New(os.Stderr, "Chain: ", log.LstdFlags, false)
+
+func EnableDebug(b bool) {
+	logger.SetDebug(b)
 }

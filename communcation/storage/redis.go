@@ -22,14 +22,17 @@ func StoreInitialModel(config string, weights string) (configKey string, weights
 	configKey = modelID + ":config"
 	err := client.Set(configKey, config, 0).Err()
 	if err != nil {
-		dlog.Fatal("Store initial config", err)
+		logger.Fatal("Store initial config", err)
 	}
+	logger.Debugf("Stored config to %s", configKey)
 
 	weightsKey = modelID + ":startWeights"
 	err = client.Set(weightsKey, weights, 0).Err()
 	if err != nil {
-		dlog.Fatal("Store initial weights", err)
+		logger.Fatal("Store initial weights", err)
 	}
+	logger.Debugf("Stored weights to %s", weightsKey)
+
 	return
 }
 
@@ -43,7 +46,7 @@ func LoadGlobalState(key string) (weights string, err error) {
 
 	weights, err = client.Get(key).Result()
 	if err == redis.Nil {
-		dlog.Fatalf("Key %s does not exist\n", key)
+		logger.Fatalf("Key %s does not exist\n", key)
 		weights = ""
 		return
 	} else if err != nil {
@@ -53,7 +56,7 @@ func LoadGlobalState(key string) (weights string, err error) {
 	return
 }
 
-func StoreUpdates(weights string) (key string, err error) {
+func StoreUpdate(weights string) (key string, err error) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
@@ -70,7 +73,7 @@ func StoreUpdates(weights string) (key string, err error) {
 		return
 	}
 
-	dlog.Debugf("Saved update with key %s\n", key)
+	logger.Debugf("Saved update with key %s\n", key)
 
 	err = nil
 	return
