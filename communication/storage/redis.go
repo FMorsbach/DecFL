@@ -4,6 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 
+	"github.com/FMorsbach/DecFL/communication/chain"
 	"github.com/FMorsbach/dlog"
 	"github.com/go-redis/redis"
 )
@@ -36,7 +37,7 @@ func StoreInitialModel(config string, weights string) (configKey string, weights
 	return
 }
 
-func LoadGlobalState(key string) (weights string, err error) {
+func LoadGlobalState(address chain.StorageAddress) (weights string, err error) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
@@ -44,9 +45,9 @@ func LoadGlobalState(key string) (weights string, err error) {
 		DB:       0,
 	})
 
-	weights, err = client.Get(key).Result()
+	weights, err = client.Get(string(address)).Result()
 	if err == redis.Nil {
-		logger.Fatalf("Key %s does not exist\n", key)
+		logger.Fatalf("Key %s does not exist\n", address)
 		weights = ""
 		return
 	} else if err != nil {
@@ -79,7 +80,7 @@ func StoreUpdate(weights string) (key string, err error) {
 	return
 }
 
-func LocalUpdates(addresses []string) (updates []string) {
+func LocalUpdates(addresses []chain.StorageAddress) (updates []string) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
@@ -88,7 +89,7 @@ func LocalUpdates(addresses []string) (updates []string) {
 	})
 
 	for _, address := range addresses {
-		update, err := client.Get(address).Result()
+		update, err := client.Get(string(address)).Result()
 		if err != nil {
 			dlog.Fatal(err)
 		}

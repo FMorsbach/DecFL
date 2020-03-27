@@ -8,13 +8,13 @@ import (
 	"time"
 )
 
-var testAddress0 storageAddress = fillAddress()
-var testAddress1 storageAddress = fillAddress()
-var testAddress2 storageAddress = fillAddress()
+var testAddress0 StorageAddress = fillAddress()
+var testAddress1 StorageAddress = fillAddress()
+var testAddress2 StorageAddress = fillAddress()
 
-func fillAddress() storageAddress {
+func fillAddress() StorageAddress {
 	rand.Seed(time.Now().UnixNano())
-	return storageAddress(strconv.Itoa(rand.Int()))
+	return StorageAddress(strconv.Itoa(rand.Int()))
 }
 
 var testObjects []Chain

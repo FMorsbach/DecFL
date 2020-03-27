@@ -2,6 +2,8 @@ package storage
 
 import (
 	"testing"
+
+	"github.com/FMorsbach/DecFL/communication/chain"
 )
 
 func TestSmokeTest(t *testing.T) {
@@ -13,7 +15,7 @@ func TestSmokeTest(t *testing.T) {
 		t.Error(err)
 	}
 
-	weights, err := LoadGlobalState(key)
+	weights, err := LoadGlobalState(chain.StorageAddress(key))
 	if err != nil {
 		t.Error(err)
 	}
