@@ -5,7 +5,7 @@ import (
 	"os"
 
 	c "github.com/FMorsbach/DecFL/communication"
-	netChain "github.com/FMorsbach/DecFL/communication/chain"
+	bc "github.com/FMorsbach/DecFL/communication/chain"
 	"github.com/FMorsbach/DecFL/communication/storage"
 	"github.com/FMorsbach/DecFL/models/MNIST"
 	"github.com/FMorsbach/DecFL/training"
@@ -14,26 +14,35 @@ import (
 )
 
 var logger = dlog.New(os.Stderr, "Control: ", log.LstdFlags, false)
-var chain netChain.Chain = netChain.NewRedis()
+var chain bc.Chain = bc.NewRedis()
+var store storage.Storage = storage.NewRedis()
 
 func EnableDebug(b bool) {
 	logger.SetDebug(b)
 }
 
-func Initialize() (modelID netChain.ModelIdentifier, err error) {
+func Initialize() (modelID bc.ModelIdentifier, err error) {
 
 	config, weights := MNIST.GenerateInitialModel()
 	logger.Debug("Created initial model")
 
-	configAddress, weightsAddress := storage.StoreInitialModel(config, weights)
+	configAddress, err := store.Store(config)
+	if err != nil {
+		return
+	}
+
+	weightsAddress, err := store.Store(weights)
+	if err != nil {
+		return
+	}
 	logger.Debugf("Wrote initial model to storage at %s and %s", configAddress, weightsAddress)
 
-	modelID, err = chain.DeployModel(c.StorageAddress(configAddress), c.StorageAddress(weightsAddress))
+	modelID, err = chain.DeployModel(configAddress, weightsAddress)
 	logger.Debug(("Wrote initial model addresses to chain"))
 	return
 }
 
-func Iterate(modelID netChain.ModelIdentifier) (err error) {
+func Iterate(modelID bc.ModelIdentifier) (err error) {
 
 	config, weights, err := globalModel(modelID)
 	if err != nil {
@@ -44,12 +53,15 @@ func Iterate(modelID netChain.ModelIdentifier) (err error) {
 	// train locally
 	localUpdate, err := tensorflow.Train(config, weights)
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
 	logger.Debug("Trained local model")
 
 	// write the update to the storage
-	updateAddress, err := storage.StoreUpdate(localUpdate)
+	updateAddress, err := store.Store(localUpdate)
+	if err != nil {
+		return
+	}
 	logger.Debugf("Wrote local update to storage at %s", updateAddress)
 
 	// write the address of the stored update to the chain
@@ -62,7 +74,7 @@ func Iterate(modelID netChain.ModelIdentifier) (err error) {
 	return
 }
 
-func Aggregate(modelID netChain.ModelIdentifier) (err error) {
+func Aggregate(modelID bc.ModelIdentifier) (err error) {
 
 	// load the local udpate addresses from the chain
 	updateAddresses, err := chain.LocalUpdateAddresses(modelID)
@@ -72,25 +84,28 @@ func Aggregate(modelID netChain.ModelIdentifier) (err error) {
 	logger.Debug("Loaded update addresses from chain")
 
 	// load the local updates from storage
-	updates := storage.LocalUpdates(updateAddresses)
+	updates, err := store.Loads(updateAddresses)
+	if err != nil {
+		return
+	}
 	logger.Debug("Loaded updates from storage")
 
 	// aggregate the local updates
 	globalWeights, err := tensorflow.Aggregate(updates)
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
 	logger.Debug("Aggregated updates")
 
 	// write the new global weights to storage
-	globalWeightsAddress, err := storage.StoreUpdate(globalWeights)
+	globalWeightsAddress, err := store.Store(globalWeights)
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
 	logger.Debugf("Wrote new weights to storage at %s", globalWeightsAddress)
 
 	// write the new global weights storage address to the chain
-	err = chain.SetGlobalWeightsAddress(modelID, c.StorageAddress(globalWeightsAddress))
+	err = chain.SetGlobalWeightsAddress(modelID, globalWeightsAddress)
 	if err != nil {
 		return
 	}
@@ -106,7 +121,7 @@ func Aggregate(modelID netChain.ModelIdentifier) (err error) {
 	return
 }
 
-func Status(modelID netChain.ModelIdentifier) (status training.EvaluationResults, err error) {
+func Status(modelID bc.ModelIdentifier) (status training.EvaluationResults, err error) {
 
 	config, weights, err := globalModel(modelID)
 	if err != nil {
@@ -123,7 +138,7 @@ func Status(modelID netChain.ModelIdentifier) (status training.EvaluationResults
 	return
 }
 
-func globalModel(modelID netChain.ModelIdentifier) (config string, weights string, err error) {
+func globalModel(modelID bc.ModelIdentifier) (config string, weights string, err error) {
 	// load the storage addresses from the chain
 	configAddress, err := chain.ModelConfigurationAddress(modelID)
 	if err != nil {
@@ -136,14 +151,14 @@ func globalModel(modelID netChain.ModelIdentifier) (config string, weights strin
 	}
 
 	// load the model from the storage
-	config, err = storage.LoadGlobalState(configAddress)
+	config, err = store.Load(configAddress)
 	if err != nil {
-		return "", "", err
+		return
 	}
 
-	weights, err = storage.LoadGlobalState(weightsAddress)
+	weights, err = store.Load(weightsAddress)
 	if err != nil {
-		return "", "", err
+		return
 	}
 
 	return
