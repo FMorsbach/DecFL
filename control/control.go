@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 
+	c "github.com/FMorsbach/DecFL/communication"
 	netChain "github.com/FMorsbach/DecFL/communication/chain"
 	"github.com/FMorsbach/DecFL/communication/storage"
 	"github.com/FMorsbach/DecFL/models/MNIST"
@@ -27,7 +28,7 @@ func Initialize() (modelID netChain.ModelIdentifier, err error) {
 	configAddress, weightsAddress := storage.StoreInitialModel(config, weights)
 	logger.Debugf("Wrote initial model to storage at %s and %s", configAddress, weightsAddress)
 
-	modelID, err = chain.DeployModel(netChain.StorageAddress(configAddress), netChain.StorageAddress(weightsAddress))
+	modelID, err = chain.DeployModel(c.StorageAddress(configAddress), c.StorageAddress(weightsAddress))
 	logger.Debug(("Wrote initial model addresses to chain"))
 	return
 }
@@ -52,7 +53,7 @@ func Iterate(modelID netChain.ModelIdentifier) (err error) {
 	logger.Debugf("Wrote local update to storage at %s", updateAddress)
 
 	// write the address of the stored update to the chain
-	err = chain.SubmitLocalUpdate(modelID, netChain.StorageAddress(updateAddress))
+	err = chain.SubmitLocalUpdate(modelID, c.StorageAddress(updateAddress))
 	if err != nil {
 		return
 	}
@@ -89,7 +90,7 @@ func Aggregate(modelID netChain.ModelIdentifier) (err error) {
 	logger.Debugf("Wrote new weights to storage at %s", globalWeightsAddress)
 
 	// write the new global weights storage address to the chain
-	err = chain.SetGlobalWeightsAddress(modelID, netChain.StorageAddress(globalWeightsAddress))
+	err = chain.SetGlobalWeightsAddress(modelID, c.StorageAddress(globalWeightsAddress))
 	if err != nil {
 		return
 	}

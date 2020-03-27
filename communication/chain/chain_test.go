@@ -6,15 +6,17 @@ import (
 	"strconv"
 	"testing"
 	"time"
+
+	c "github.com/FMorsbach/DecFL/communication"
 )
 
-var testAddress0 StorageAddress = fillAddress()
-var testAddress1 StorageAddress = fillAddress()
-var testAddress2 StorageAddress = fillAddress()
+var testAddress0 c.StorageAddress = fillAddress()
+var testAddress1 c.StorageAddress = fillAddress()
+var testAddress2 c.StorageAddress = fillAddress()
 
-func fillAddress() StorageAddress {
+func fillAddress() c.StorageAddress {
 	rand.Seed(time.Now().UnixNano())
-	return StorageAddress(strconv.Itoa(rand.Int()))
+	return c.StorageAddress(strconv.Itoa(rand.Int()))
 }
 
 var testObjects []Chain

@@ -4,19 +4,19 @@ import (
 	"log"
 	"os"
 
+	c "github.com/FMorsbach/DecFL/communication"
 	"github.com/FMorsbach/dlog"
 )
 
-type StorageAddress string
 type ModelIdentifier string
 
 type Chain interface {
-	DeployModel(configAddress StorageAddress, weightsAddress StorageAddress) (id ModelIdentifier, err error)
-	ModelConfigurationAddress(id ModelIdentifier) (address StorageAddress, err error)
-	GlobalWeightsAddress(id ModelIdentifier) (address StorageAddress, err error)
-	SetGlobalWeightsAddress(id ModelIdentifier, address StorageAddress) (err error)
-	SubmitLocalUpdate(id ModelIdentifier, address StorageAddress) (err error)
-	LocalUpdateAddresses(id ModelIdentifier) (addresses []StorageAddress, err error)
+	DeployModel(configAddress c.StorageAddress, weightsAddress c.StorageAddress) (id ModelIdentifier, err error)
+	ModelConfigurationAddress(id ModelIdentifier) (address c.StorageAddress, err error)
+	GlobalWeightsAddress(id ModelIdentifier) (address c.StorageAddress, err error)
+	SetGlobalWeightsAddress(id ModelIdentifier, address c.StorageAddress) (err error)
+	SubmitLocalUpdate(id ModelIdentifier, address c.StorageAddress) (err error)
+	LocalUpdateAddresses(id ModelIdentifier) (addresses []c.StorageAddress, err error)
 	ClearLocalUpdateAddresses(id ModelIdentifier) (err error)
 }
 

@@ -2,26 +2,32 @@ package storage
 
 import (
 	"testing"
-
-	"github.com/FMorsbach/DecFL/communication/chain"
 )
 
-func TestSmokeTest(t *testing.T) {
+func TestNewRedis(t *testing.T) {
 
-	udpate := "SomeRandomUpdate"
+	redis := NewRedis()
 
-	key, err := StoreUpdate(udpate)
+	if redis.client.Options().Addr != connection {
+		t.Errorf("Expected %s but got %s", connection, redis.client.Options().Addr)
+	}
+}
+
+func TestFlushRedis(t *testing.T) {
+
+	redis := NewRedis()
+
+	add, err := redis.Store(generateRandomContent())
 	if err != nil {
 		t.Error(err)
 	}
 
-	weights, err := LoadGlobalState(chain.StorageAddress(key))
+	err = redis.FlushRedis()
 	if err != nil {
 		t.Error(err)
 	}
 
-	if weights != udpate {
-		t.Errorf("Write/Read failed. Expected %s but got %s", udpate, weights)
+	if ad, err := redis.Load(add); err == nil {
+		t.Errorf("Config: Got %s but expected error", ad)
 	}
-
 }

@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	c "github.com/FMorsbach/DecFL/communication"
 	"github.com/go-redis/redis"
 )
 
@@ -31,7 +32,7 @@ func NewRedis() (instance *Redis) {
 	return &Redis{client: client}
 }
 
-func (r *Redis) DeployModel(configAddress StorageAddress, weightsAddress StorageAddress) (id ModelIdentifier, err error) {
+func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.StorageAddress) (id ModelIdentifier, err error) {
 
 	rand.Seed(time.Now().UnixNano())
 	id = ModelIdentifier(strconv.Itoa(rand.Intn(10000)))
@@ -52,29 +53,29 @@ func (r *Redis) DeployModel(configAddress StorageAddress, weightsAddress Storage
 	return
 }
 
-func (r *Redis) ModelConfigurationAddress(id ModelIdentifier) (address StorageAddress, err error) {
+func (r *Redis) ModelConfigurationAddress(id ModelIdentifier) (address c.StorageAddress, err error) {
 
 	temp, err := r.client.Get(key(id, MODEL_CONFIG_KEY)).Result()
 	if err != nil {
 		return
 	}
-	address = StorageAddress(temp)
+	address = c.StorageAddress(temp)
 
 	return
 }
 
-func (r *Redis) GlobalWeightsAddress(id ModelIdentifier) (address StorageAddress, err error) {
+func (r *Redis) GlobalWeightsAddress(id ModelIdentifier) (address c.StorageAddress, err error) {
 
 	temp, err := r.client.Get(key(id, MODEL_WEIGHTS_KEY)).Result()
 	if err != nil {
 		return
 	}
-	address = StorageAddress(temp)
+	address = c.StorageAddress(temp)
 
 	return
 }
 
-func (r *Redis) SetGlobalWeightsAddress(id ModelIdentifier, address StorageAddress) (err error) {
+func (r *Redis) SetGlobalWeightsAddress(id ModelIdentifier, address c.StorageAddress) (err error) {
 
 	err = r.client.Set(key(id, MODEL_WEIGHTS_KEY), string(address), 0).Err()
 	if err != nil {
@@ -85,7 +86,7 @@ func (r *Redis) SetGlobalWeightsAddress(id ModelIdentifier, address StorageAddre
 	return
 }
 
-func (r *Redis) SubmitLocalUpdate(id ModelIdentifier, address StorageAddress) (err error) {
+func (r *Redis) SubmitLocalUpdate(id ModelIdentifier, address c.StorageAddress) (err error) {
 
 	err = r.client.SAdd(key(id, LOCAL_UPDATES_KEY), string(address)).Err()
 	if err != nil {
@@ -96,16 +97,16 @@ func (r *Redis) SubmitLocalUpdate(id ModelIdentifier, address StorageAddress) (e
 	return
 }
 
-func (r *Redis) LocalUpdateAddresses(id ModelIdentifier) (addresses []StorageAddress, err error) {
+func (r *Redis) LocalUpdateAddresses(id ModelIdentifier) (addresses []c.StorageAddress, err error) {
 
 	temp, err := r.client.SMembers(key(id, LOCAL_UPDATES_KEY)).Result()
 	if err != nil {
 		logger.Fatal(err)
 	}
 
-	addresses = make([]StorageAddress, len(temp))
+	addresses = make([]c.StorageAddress, len(temp))
 	for i, t := range temp {
-		addresses[i] = StorageAddress(t)
+		addresses[i] = c.StorageAddress(t)
 	}
 
 	return
