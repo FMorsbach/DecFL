@@ -2,50 +2,36 @@ package chain
 
 import (
 	"testing"
-
-	"github.com/go-redis/redis"
 )
 
-func TestDeploy(t *testing.T) {
+func TestNewRedis(t *testing.T) {
 
-	const testConfigString string = "testConfiguration"
-	const testWeightsString string = "testWeights"
+	redis := NewRedis()
 
-	DeployInitialModel(testConfigString, testWeightsString)
-
-	rtnValue := ModelConfigurationAddress()
-	if testConfigString != rtnValue {
-		t.Errorf("Weights do not match. Expected %s but got %s", testConfigString, rtnValue)
+	if redis.client.Options().Addr != connection {
+		t.Errorf("Expected %s but got %s", connection, redis.client.Options().Addr)
 	}
-
-	rtnValue = GlobalWeightsAddress()
-	if testWeightsString != rtnValue {
-		t.Errorf("Weights do not match. Expected %s but got %s", testWeightsString, rtnValue)
-	}
-
-	return
 }
 
-func TestUpdate(t *testing.T) {
+func TestFlushRedis(t *testing.T) {
 
-	const key string = "testLocalTrainingResult"
-	const data string = "udpatedWeights"
-	AppendUpdateAddress(key, data)
+	redis := NewRedis()
 
-	client := redis.NewClient(&redis.Options{
-		Addr:     connection,
-		Password: "",
-		DB:       0,
-	})
-
-	rtnValue, err := client.Get(key).Result()
+	id, err := redis.DeployModel(fillAddress(), fillAddress())
 	if err != nil {
 		t.Error(err)
 	}
 
-	if rtnValue != data {
-		t.Errorf("Update mismatch: Expected %s but got %s", data, rtnValue)
+	err = redis.FlushRedis()
+	if err != nil {
+		t.Error(err)
 	}
 
-	return
+	if ad, err := redis.ModelConfigurationAddress(id); err == nil {
+		t.Errorf("Config: Got %s but expected error", ad)
+	}
+
+	if ad, err := redis.GlobalWeightsAddress(id); err == nil {
+		t.Errorf("Weights: Got %s but expected error", ad)
+	}
 }

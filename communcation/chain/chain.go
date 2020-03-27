@@ -8,16 +8,17 @@ import (
 )
 
 type storageAddress string
-type trainerIdentification string
+type trainerIdentifier string
+type modelIdentifier string
 
 type Chain interface {
-	DeployModel(configuration string, weights string) (modelIdentitifier string, err error)
-	ModelConfigurationAddress(modelIdentitifier string) (configurationAddress storageAddress, err error)
-	GlobalWeightsAddress(modelIdentitifier string) (weightsAddress storageAddress, err error)
-	SetGlobalWeightsAddress(address storageAddress) (err error)
-	SubmitLocalUpdate(trainer trainerIdentification, address storageAddress) (err error)
-	LocalUpdateAddresses() (localUpdateAddresses []storageAddress, err error)
-	ClearLocalUpdateAddresses() (err error)
+	DeployModel(configAddress storageAddress, weightsAddress storageAddress) (id modelIdentifier, err error)
+	ModelConfigurationAddress(id modelIdentifier) (address storageAddress, err error)
+	GlobalWeightsAddress(id modelIdentifier) (address storageAddress, err error)
+	SetGlobalWeightsAddress(id modelIdentifier, address storageAddress) (err error)
+	SubmitLocalUpdate(id modelIdentifier, address storageAddress) (err error)
+	LocalUpdateAddresses(id modelIdentifier) (addresses []storageAddress, err error)
+	ClearLocalUpdateAddresses(id modelIdentifier) (err error)
 }
 
 var logger = dlog.New(os.Stderr, "Chain: ", log.LstdFlags, false)
