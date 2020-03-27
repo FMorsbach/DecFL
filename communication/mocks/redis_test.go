@@ -1,8 +1,19 @@
-package chain
+package mocks
 
 import (
+	"math/rand"
+	"strconv"
 	"testing"
+	"time"
+
+	c "github.com/FMorsbach/DecFL/communication"
 )
+
+// TODO: check if can be imported
+func FillAddress() c.StorageAddress {
+	rand.Seed(time.Now().UnixNano())
+	return c.StorageAddress(strconv.Itoa(rand.Int()))
+}
 
 func TestNewRedis(t *testing.T) {
 
@@ -17,7 +28,7 @@ func TestFlushRedis(t *testing.T) {
 
 	redis := NewRedis()
 
-	id, err := redis.DeployModel(fillAddress(), fillAddress())
+	id, err := redis.DeployModel(FillAddress(), FillAddress())
 	if err != nil {
 		t.Error(err)
 	}

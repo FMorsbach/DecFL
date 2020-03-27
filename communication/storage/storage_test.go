@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/FMorsbach/DecFL/communication"
+	"github.com/FMorsbach/DecFL/communication/mocks"
 )
 
 var content0 string = generateRandomContent()
@@ -21,7 +22,7 @@ var testObjects []Storage
 
 func init() {
 	testObjects = []Storage{
-		NewRedis(),
+		mocks.NewRedis(),
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 
 	c "github.com/FMorsbach/DecFL/communication"
 	bc "github.com/FMorsbach/DecFL/communication/chain"
+	"github.com/FMorsbach/DecFL/communication/mocks"
 	"github.com/FMorsbach/DecFL/communication/storage"
 	"github.com/FMorsbach/DecFL/models/MNIST"
 	"github.com/FMorsbach/DecFL/training"
@@ -14,14 +15,14 @@ import (
 )
 
 var logger = dlog.New(os.Stderr, "Control: ", log.LstdFlags, false)
-var chain bc.Chain = bc.NewRedis()
-var store storage.Storage = storage.NewRedis()
+var chain bc.Chain = mocks.NewRedis()
+var store storage.Storage = mocks.NewRedis()
 
 func EnableDebug(b bool) {
 	logger.SetDebug(b)
 }
 
-func Initialize() (modelID bc.ModelIdentifier, err error) {
+func Initialize() (modelID c.ModelIdentifier, err error) {
 
 	config, weights := MNIST.GenerateInitialModel()
 	logger.Debug("Created initial model")
@@ -42,7 +43,7 @@ func Initialize() (modelID bc.ModelIdentifier, err error) {
 	return
 }
 
-func Iterate(modelID bc.ModelIdentifier) (err error) {
+func Iterate(modelID c.ModelIdentifier) (err error) {
 
 	config, weights, err := globalModel(modelID)
 	if err != nil {
@@ -74,7 +75,7 @@ func Iterate(modelID bc.ModelIdentifier) (err error) {
 	return
 }
 
-func Aggregate(modelID bc.ModelIdentifier) (err error) {
+func Aggregate(modelID c.ModelIdentifier) (err error) {
 
 	// load the local udpate addresses from the chain
 	updateAddresses, err := chain.LocalUpdateAddresses(modelID)
@@ -121,7 +122,7 @@ func Aggregate(modelID bc.ModelIdentifier) (err error) {
 	return
 }
 
-func Status(modelID bc.ModelIdentifier) (status training.EvaluationResults, err error) {
+func Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err error) {
 
 	config, weights, err := globalModel(modelID)
 	if err != nil {
@@ -138,7 +139,7 @@ func Status(modelID bc.ModelIdentifier) (status training.EvaluationResults, err 
 	return
 }
 
-func globalModel(modelID bc.ModelIdentifier) (config string, weights string, err error) {
+func globalModel(modelID c.ModelIdentifier) (config string, weights string, err error) {
 	// load the storage addresses from the chain
 	configAddress, err := chain.ModelConfigurationAddress(modelID)
 	if err != nil {

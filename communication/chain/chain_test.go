@@ -8,13 +8,14 @@ import (
 	"time"
 
 	c "github.com/FMorsbach/DecFL/communication"
+	"github.com/FMorsbach/DecFL/communication/mocks"
 )
 
-var testAddress0 c.StorageAddress = fillAddress()
-var testAddress1 c.StorageAddress = fillAddress()
-var testAddress2 c.StorageAddress = fillAddress()
+var testAddress0 c.StorageAddress = FillAddress()
+var testAddress1 c.StorageAddress = FillAddress()
+var testAddress2 c.StorageAddress = FillAddress()
 
-func fillAddress() c.StorageAddress {
+func FillAddress() c.StorageAddress {
 	rand.Seed(time.Now().UnixNano())
 	return c.StorageAddress(strconv.Itoa(rand.Int()))
 }
@@ -25,7 +26,7 @@ func init() {
 
 	//logger.SetDebug(true)
 
-	redis := NewRedis()
+	redis := mocks.NewRedis()
 
 	if ok, err := redis.IsReachable(); !ok {
 		logger.Fatal("Cant reach redis for testing", err)
@@ -162,7 +163,7 @@ func TestClearLocalUpdateAddresses(t *testing.T) {
 
 func determineImplementation(object Chain) string {
 	switch t := object.(type) {
-	case *Redis:
+	case *mocks.Redis:
 		return reflect.TypeOf(t).String()
 	}
 

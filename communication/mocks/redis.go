@@ -1,12 +1,17 @@
-package chain
+package mocks
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
+	"log"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
 	c "github.com/FMorsbach/DecFL/communication"
+	"github.com/FMorsbach/dlog"
 	"github.com/go-redis/redis"
 )
 
@@ -16,6 +21,12 @@ const MODEL_CONFIG_KEY string = "globalModelConfiguration"
 const MODEL_WEIGHTS_KEY string = "globalModelWeights"
 const ITERATIONS_KEY string = "iteration"
 const LOCAL_UPDATES_KEY string = "localUpdates"
+
+var logger = dlog.New(os.Stderr, "Redis: ", log.LstdFlags, false)
+
+func EnableDebug(b bool) {
+	logger.SetDebug(b)
+}
 
 type Redis struct {
 	client *redis.Client
@@ -32,10 +43,10 @@ func NewRedis() (instance *Redis) {
 	return &Redis{client: client}
 }
 
-func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.StorageAddress) (id ModelIdentifier, err error) {
+func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.StorageAddress) (id c.ModelIdentifier, err error) {
 
 	rand.Seed(time.Now().UnixNano())
-	id = ModelIdentifier(strconv.Itoa(rand.Intn(10000)))
+	id = c.ModelIdentifier(strconv.Itoa(rand.Intn(10000)))
 	logger.Debugf("Generated %s as model id", id)
 
 	err = r.client.Set(key(id, MODEL_CONFIG_KEY), string(configAddress), 0).Err()
@@ -53,7 +64,7 @@ func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.Sto
 	return
 }
 
-func (r *Redis) ModelConfigurationAddress(id ModelIdentifier) (address c.StorageAddress, err error) {
+func (r *Redis) ModelConfigurationAddress(id c.ModelIdentifier) (address c.StorageAddress, err error) {
 
 	temp, err := r.client.Get(key(id, MODEL_CONFIG_KEY)).Result()
 	if err != nil {
@@ -64,7 +75,7 @@ func (r *Redis) ModelConfigurationAddress(id ModelIdentifier) (address c.Storage
 	return
 }
 
-func (r *Redis) GlobalWeightsAddress(id ModelIdentifier) (address c.StorageAddress, err error) {
+func (r *Redis) GlobalWeightsAddress(id c.ModelIdentifier) (address c.StorageAddress, err error) {
 
 	temp, err := r.client.Get(key(id, MODEL_WEIGHTS_KEY)).Result()
 	if err != nil {
@@ -75,7 +86,7 @@ func (r *Redis) GlobalWeightsAddress(id ModelIdentifier) (address c.StorageAddre
 	return
 }
 
-func (r *Redis) SetGlobalWeightsAddress(id ModelIdentifier, address c.StorageAddress) (err error) {
+func (r *Redis) SetGlobalWeightsAddress(id c.ModelIdentifier, address c.StorageAddress) (err error) {
 
 	err = r.client.Set(key(id, MODEL_WEIGHTS_KEY), string(address), 0).Err()
 	if err != nil {
@@ -86,7 +97,7 @@ func (r *Redis) SetGlobalWeightsAddress(id ModelIdentifier, address c.StorageAdd
 	return
 }
 
-func (r *Redis) SubmitLocalUpdate(id ModelIdentifier, address c.StorageAddress) (err error) {
+func (r *Redis) SubmitLocalUpdate(id c.ModelIdentifier, address c.StorageAddress) (err error) {
 
 	err = r.client.SAdd(key(id, LOCAL_UPDATES_KEY), string(address)).Err()
 	if err != nil {
@@ -97,7 +108,7 @@ func (r *Redis) SubmitLocalUpdate(id ModelIdentifier, address c.StorageAddress) 
 	return
 }
 
-func (r *Redis) LocalUpdateAddresses(id ModelIdentifier) (addresses []c.StorageAddress, err error) {
+func (r *Redis) LocalUpdateAddresses(id c.ModelIdentifier) (addresses []c.StorageAddress, err error) {
 
 	temp, err := r.client.SMembers(key(id, LOCAL_UPDATES_KEY)).Result()
 	if err != nil {
@@ -112,7 +123,7 @@ func (r *Redis) LocalUpdateAddresses(id ModelIdentifier) (addresses []c.StorageA
 	return
 }
 
-func (r *Redis) ClearLocalUpdateAddresses(id ModelIdentifier) (err error) {
+func (r *Redis) ClearLocalUpdateAddresses(id c.ModelIdentifier) (err error) {
 
 	err = r.client.Del(key(id, LOCAL_UPDATES_KEY)).Err()
 	if err != nil {
@@ -143,6 +154,47 @@ func (r *Redis) IsReachable() (reachable bool, err error) {
 	}
 }
 
-func key(id ModelIdentifier, key string) string {
+func key(id c.ModelIdentifier, key string) string {
 	return fmt.Sprintf("%s-%s", string(id), key)
+}
+
+func (r *Redis) Store(content string) (address c.StorageAddress, err error) {
+
+	h := sha256.Sum256([]byte(content))
+	dh := h[0:32]
+	address = c.StorageAddress(hex.EncodeToString(dh))
+
+	err = r.client.Set(string(address), content, 0).Err()
+	if err != nil {
+		return
+	}
+	logger.Debugf("Saved update with key %s\n", address)
+
+	return
+}
+
+func (r *Redis) Load(address c.StorageAddress) (content string, err error) {
+
+	content, err = r.client.Get(string(address)).Result()
+	if err == redis.Nil {
+		err = fmt.Errorf("Key %s does not exist: %s", address, err)
+		return
+	} else if err != nil {
+		return
+	}
+
+	return
+}
+
+func (r *Redis) Loads(addresses []c.StorageAddress) (content []string, err error) {
+
+	for _, address := range addresses {
+		update, err := r.client.Get(string(address)).Result()
+		if err != nil {
+			return nil, err
+		}
+		content = append(content, update)
+	}
+
+	return
 }
