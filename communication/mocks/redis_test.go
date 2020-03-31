@@ -7,12 +7,19 @@ import (
 	"time"
 
 	c "github.com/FMorsbach/DecFL/communication"
+	"github.com/FMorsbach/dlog"
 )
 
 // TODO: check if can be imported
 func FillAddress() c.StorageAddress {
 	rand.Seed(time.Now().UnixNano())
 	return c.StorageAddress(strconv.Itoa(rand.Int()))
+}
+
+func init() {
+	if ok, err := NewRedis().IsReachable(); !ok {
+		dlog.Fatal("Cant reach redis: ", err)
+	}
 }
 
 func TestNewRedis(t *testing.T) {

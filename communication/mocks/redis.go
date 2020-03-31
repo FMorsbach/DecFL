@@ -3,6 +3,7 @@ package mocks
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -51,13 +52,13 @@ func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.Sto
 
 	err = r.client.Set(key(id, MODEL_CONFIG_KEY), string(configAddress), 0).Err()
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
 	logger.Debugf("Wrote configuration to %s", key(id, MODEL_CONFIG_KEY))
 
 	err = r.client.Set(key(id, MODEL_WEIGHTS_KEY), string(weightsAddress), 0).Err()
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
 	logger.Debugf("Wrote weights to %s", key(id, MODEL_WEIGHTS_KEY))
 
@@ -97,27 +98,36 @@ func (r *Redis) SetGlobalWeightsAddress(id c.ModelIdentifier, address c.StorageA
 	return
 }
 
-func (r *Redis) SubmitLocalUpdate(id c.ModelIdentifier, address c.StorageAddress) (err error) {
+func (r *Redis) SubmitLocalUpdate(modelID c.ModelIdentifier, update c.Update) (err error) {
 
-	err = r.client.SAdd(key(id, LOCAL_UPDATES_KEY), string(address)).Err()
+	data, err := json.Marshal(update)
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
-	logger.Debugf("Appended %s to %s", address, key(id, LOCAL_UPDATES_KEY))
+	err = r.client.SAdd(key(modelID, LOCAL_UPDATES_KEY), data).Err()
+	if err != nil {
+		return
+	}
+	logger.Debugf("Appended %s to %s", update.Address, key(modelID, LOCAL_UPDATES_KEY))
 
 	return
 }
 
-func (r *Redis) LocalUpdateAddresses(id c.ModelIdentifier) (addresses []c.StorageAddress, err error) {
+func (r *Redis) LocalUpdates(id c.ModelIdentifier) (addresses []c.Update, err error) {
 
 	temp, err := r.client.SMembers(key(id, LOCAL_UPDATES_KEY)).Result()
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
 
-	addresses = make([]c.StorageAddress, len(temp))
+	addresses = make([]c.Update, len(temp))
 	for i, t := range temp {
-		addresses[i] = c.StorageAddress(t)
+		var data c.Update
+		err = json.Unmarshal([]byte(t), &data)
+		if err != nil {
+			return
+		}
+		addresses[i] = data
 	}
 
 	return
@@ -127,7 +137,7 @@ func (r *Redis) ClearLocalUpdateAddresses(id c.ModelIdentifier) (err error) {
 
 	err = r.client.Del(key(id, LOCAL_UPDATES_KEY)).Err()
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
 	logger.Debugf("Reset local update store at %s", key(id, LOCAL_UPDATES_KEY))
 
@@ -137,7 +147,7 @@ func (r *Redis) ClearLocalUpdateAddresses(id c.ModelIdentifier) (err error) {
 func (r *Redis) FlushRedis() (err error) {
 	err = r.client.FlushAll().Err()
 	if err != nil {
-		logger.Fatal(err)
+		return
 	}
 	logger.Debugf("Flushed redis at %s", r.client.Options().Addr)
 
@@ -181,19 +191,6 @@ func (r *Redis) Load(address c.StorageAddress) (content string, err error) {
 		return
 	} else if err != nil {
 		return
-	}
-
-	return
-}
-
-func (r *Redis) Loads(addresses []c.StorageAddress) (content []string, err error) {
-
-	for _, address := range addresses {
-		update, err := r.client.Get(string(address)).Result()
-		if err != nil {
-			return nil, err
-		}
-		content = append(content, update)
 	}
 
 	return

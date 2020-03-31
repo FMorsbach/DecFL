@@ -13,8 +13,8 @@ type Chain interface {
 	ModelConfigurationAddress(id c.ModelIdentifier) (address c.StorageAddress, err error)
 	GlobalWeightsAddress(id c.ModelIdentifier) (address c.StorageAddress, err error)
 	SetGlobalWeightsAddress(id c.ModelIdentifier, address c.StorageAddress) (err error)
-	SubmitLocalUpdate(id c.ModelIdentifier, address c.StorageAddress) (err error)
-	LocalUpdateAddresses(id c.ModelIdentifier) (addresses []c.StorageAddress, err error)
+	SubmitLocalUpdate(modelID c.ModelIdentifier, update c.Update) (err error)
+	LocalUpdates(id c.ModelIdentifier) (updates []c.Update, err error)
 	ClearLocalUpdateAddresses(id c.ModelIdentifier) (err error)
 }
 

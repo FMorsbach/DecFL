@@ -97,29 +97,37 @@ func TestLocalUpdateSubmission(t *testing.T) {
 
 	for _, chain := range testObjects {
 
-		id, err := chain.DeployModel(testAddress0, testAddress1)
+		modelID, err := chain.DeployModel(testAddress0, testAddress1)
 		if err != nil {
 			t.Error(determineImplementation(chain), err)
 		}
 
-		addresses, err := chain.LocalUpdateAddresses(id)
+		updates, err := chain.LocalUpdates(modelID)
 		if err != nil {
 			t.Error(determineImplementation(chain), err)
 		}
 
-		count := len(addresses)
+		count := len(updates)
 
-		err = chain.SubmitLocalUpdate(id, testAddress2)
+		trainID := c.TrainerIdentifier("someTrainer")
+		update := c.Update{
+			Trainer: trainID,
+			Address: testAddress2,
+		}
+
+		err = chain.SubmitLocalUpdate(modelID, update)
 		if err != nil {
 			t.Error(determineImplementation(chain), err)
 		}
 
-		if addresses, err = chain.LocalUpdateAddresses(id); err != nil {
+		if updates, err = chain.LocalUpdates(modelID); err != nil {
 			t.Error(err)
-		} else if len(addresses) != count+1 {
-			t.Errorf("%s Expected %d as number of elements but got %d", determineImplementation(chain), count+1, len(addresses))
-		} else if addresses[count] != testAddress2 {
-			t.Errorf("%s Expected %s as appended address but got %s", determineImplementation(chain), testAddress2, addresses[count])
+		} else if len(updates) != count+1 {
+			t.Errorf("%s Expected %d as number of elements but got %d", determineImplementation(chain), count+1, len(updates))
+		} else if updates[count].Address != testAddress2 {
+			t.Errorf("%s Expected %s as appended address but got %s", determineImplementation(chain), testAddress2, updates[count].Address)
+		} else if updates[count].Trainer != trainID {
+			t.Errorf("%s Expected %s as trainer ID but got %s", determineImplementation(chain), trainID, updates[count].Trainer)
 		}
 	}
 }
@@ -133,12 +141,18 @@ func TestClearLocalUpdateAddresses(t *testing.T) {
 			t.Error(determineImplementation(chain), err)
 		}
 
-		err = chain.SubmitLocalUpdate(modelID, testAddress2)
+		trainID := c.TrainerIdentifier("someTrainer")
+		update := c.Update{
+			Trainer: trainID,
+			Address: testAddress2,
+		}
+
+		err = chain.SubmitLocalUpdate(modelID, update)
 		if err != nil {
 			t.Error(determineImplementation(chain), err)
 		}
 
-		addresses, err := chain.LocalUpdateAddresses(modelID)
+		addresses, err := chain.LocalUpdates(modelID)
 		if err != nil {
 			t.Error(determineImplementation(chain), err)
 		}
@@ -153,7 +167,7 @@ func TestClearLocalUpdateAddresses(t *testing.T) {
 			t.Error(determineImplementation(chain), err)
 		}
 
-		if addresses, err = chain.LocalUpdateAddresses(modelID); err != nil {
+		if addresses, err = chain.LocalUpdates(modelID); err != nil {
 			t.Error(err)
 		} else if len(addresses) != 0 {
 			t.Errorf("%s Expected 0 elements in list but got %d", determineImplementation(chain), len(addresses))

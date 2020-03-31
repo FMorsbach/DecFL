@@ -43,7 +43,7 @@ func Initialize() (modelID c.ModelIdentifier, err error) {
 	return
 }
 
-func Iterate(modelID c.ModelIdentifier) (err error) {
+func Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err error) {
 
 	config, weights, err := globalModel(modelID)
 	if err != nil {
@@ -65,8 +65,12 @@ func Iterate(modelID c.ModelIdentifier) (err error) {
 	}
 	logger.Debugf("Wrote local update to storage at %s", updateAddress)
 
+	update := c.Update{
+		Trainer: trainerID,
+		Address: updateAddress,
+	}
 	// write the address of the stored update to the chain
-	err = chain.SubmitLocalUpdate(modelID, c.StorageAddress(updateAddress))
+	err = chain.SubmitLocalUpdate(modelID, update)
 	if err != nil {
 		return
 	}
@@ -78,16 +82,19 @@ func Iterate(modelID c.ModelIdentifier) (err error) {
 func Aggregate(modelID c.ModelIdentifier) (err error) {
 
 	// load the local udpate addresses from the chain
-	updateAddresses, err := chain.LocalUpdateAddresses(modelID)
+	localUpdates, err := chain.LocalUpdates(modelID)
 	if err != nil {
 		return
 	}
 	logger.Debug("Loaded update addresses from chain")
 
 	// load the local updates from storage
-	updates, err := store.Loads(updateAddresses)
-	if err != nil {
-		return
+	updates := make([]string, len(localUpdates))
+	for i, localUpdate := range localUpdates {
+		updates[i], err = store.Load(localUpdate.Address)
+		if err != nil {
+			return
+		}
 	}
 	logger.Debug("Loaded updates from storage")
 

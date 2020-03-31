@@ -11,7 +11,6 @@ import (
 type Storage interface {
 	Store(content string) (address communication.StorageAddress, err error)
 	Load(address communication.StorageAddress) (content string, err error)
-	Loads(addresses []communication.StorageAddress) (content []string, err error)
 }
 
 var logger = dlog.New(os.Stderr, "Storage: ", log.LstdFlags, false)

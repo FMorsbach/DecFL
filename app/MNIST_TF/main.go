@@ -1,6 +1,9 @@
 package main
 
 import (
+	"strconv"
+
+	"github.com/FMorsbach/DecFL/communication"
 	"github.com/FMorsbach/DecFL/communication/chain"
 	"github.com/FMorsbach/DecFL/communication/storage"
 	"github.com/FMorsbach/DecFL/control"
@@ -31,7 +34,7 @@ func main() {
 
 	dlog.Debugln("Starting MNIST-TF scenario")
 
-	id, err := control.Initialize()
+	modelID, err := control.Initialize()
 	if err != nil {
 		dlog.Fatal(err)
 	}
@@ -40,13 +43,13 @@ func main() {
 
 	iteration := 0
 
-	status, err := control.Status(id)
+	status, err := control.Status(modelID)
 	dlog.Debugf("Initial Status %s\n", status)
 
 	dlog.Debugf("Starting sequential taining with %d local clients untill %f accuracy reached", CLIENTS, TARGET_ACC)
 	for status.Accuracy < TARGET_ACC {
 		for i := 0; i < CLIENTS; i++ {
-			err = control.Iterate(id)
+			err = control.Iterate(modelID, communication.TrainerIdentifier(strconv.Itoa(i)))
 			if err != nil {
 				dlog.Fatal(err)
 			}
@@ -55,12 +58,12 @@ func main() {
 
 		iteration++
 		dlog.Debugf("Clients finished iteration %d, starting aggregation", iteration)
-		err = control.Aggregate(id)
+		err = control.Aggregate(modelID)
 		if err != nil {
 			dlog.Fatal(err)
 		}
 
-		status, err = control.Status(id)
+		status, err = control.Status(modelID)
 		dlog.Debugf("Status after iteration %d: %s\n", iteration, status)
 	}
 
