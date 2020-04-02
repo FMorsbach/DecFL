@@ -113,7 +113,7 @@ func Aggregate(modelID c.ModelIdentifier) (err error) {
 	logger.Debugf("Wrote new weights to storage at %s", globalWeightsAddress)
 
 	// write the new global weights storage address to the chain
-	err = chain.SetGlobalWeightsAddress(modelID, globalWeightsAddress)
+	err = chain.PublishNewModelWeights(modelID, globalWeightsAddress)
 	if err != nil {
 		return
 	}

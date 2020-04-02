@@ -22,6 +22,7 @@ const MODEL_CONFIG_KEY string = "globalModelConfiguration"
 const MODEL_WEIGHTS_KEY string = "globalModelWeights"
 const ITERATIONS_KEY string = "iteration"
 const LOCAL_UPDATES_KEY string = "localUpdates"
+const MODEL_EPOCH_KEY string = "epoch"
 
 var logger = dlog.New(os.Stderr, "Redis: ", log.LstdFlags, false)
 
@@ -62,6 +63,12 @@ func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.Sto
 	}
 	logger.Debugf("Wrote weights to %s", key(id, MODEL_WEIGHTS_KEY))
 
+	err = r.client.Set(key(id, MODEL_EPOCH_KEY), strconv.Itoa(0), 0).Err()
+	if err != nil {
+		return
+	}
+	logger.Debugf("Wrote model epoch to %s", key(id, MODEL_EPOCH_KEY))
+
 	return
 }
 
@@ -87,13 +94,24 @@ func (r *Redis) GlobalWeightsAddress(id c.ModelIdentifier) (address c.StorageAdd
 	return
 }
 
-func (r *Redis) SetGlobalWeightsAddress(id c.ModelIdentifier, address c.StorageAddress) (err error) {
+func (r *Redis) PublishNewModelWeights(id c.ModelIdentifier, address c.StorageAddress) (err error) {
 
 	err = r.client.Set(key(id, MODEL_WEIGHTS_KEY), string(address), 0).Err()
 	if err != nil {
 		return
 	}
 	logger.Debugf("Wrote weights to %s", key(id, MODEL_WEIGHTS_KEY))
+
+	epoch, err := r.ModelEpoch(id)
+	if err != nil {
+		return
+	}
+
+	err = r.client.Set(key(id, MODEL_EPOCH_KEY), strconv.Itoa(epoch+1), 0).Err()
+	if err != nil {
+		return
+	}
+	logger.Debugf("Wrote model epoch to %s", key(id, MODEL_EPOCH_KEY))
 
 	return
 }
@@ -140,6 +158,21 @@ func (r *Redis) ClearLocalUpdateAddresses(id c.ModelIdentifier) (err error) {
 		return
 	}
 	logger.Debugf("Reset local update store at %s", key(id, LOCAL_UPDATES_KEY))
+
+	return
+}
+
+func (r *Redis) ModelEpoch(id c.ModelIdentifier) (epoch int, err error) {
+
+	temp, err := r.client.Get(key(id, MODEL_EPOCH_KEY)).Result()
+	if err != nil {
+		return
+	}
+
+	epoch, err = strconv.Atoi(temp)
+	if err != nil {
+		return
+	}
 
 	return
 }

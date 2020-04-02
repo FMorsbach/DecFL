@@ -71,7 +71,7 @@ func TestDeployModelAndReadModel(t *testing.T) {
 
 }
 
-func TestSetGlobalWeightsAddress(t *testing.T) {
+func TestPublishNewModelWeights(t *testing.T) {
 
 	for _, chain := range testObjects {
 
@@ -80,7 +80,7 @@ func TestSetGlobalWeightsAddress(t *testing.T) {
 			t.Error(determineImplementation(chain), err)
 		}
 
-		err = chain.SetGlobalWeightsAddress(id, testAddress0)
+		err = chain.PublishNewModelWeights(id, testAddress0)
 		if err != nil {
 			t.Error(determineImplementation(chain), err)
 		}
@@ -171,6 +171,36 @@ func TestClearLocalUpdateAddresses(t *testing.T) {
 			t.Error(err)
 		} else if len(addresses) != 0 {
 			t.Errorf("%s Expected 0 elements in list but got %d", determineImplementation(chain), len(addresses))
+		}
+	}
+}
+
+func TestModelEpoch(t *testing.T) {
+
+	for _, chain := range testObjects {
+
+		id, err := chain.DeployModel(testAddress0, testAddress1)
+		if err != nil {
+			t.Error(determineImplementation(chain), err)
+		}
+
+		epoch, err := chain.ModelEpoch(id)
+		if err != nil {
+			t.Error(determineImplementation(chain), err)
+		} else if epoch != 0 {
+			t.Errorf("%s Expected epoch to be zero but got %d", determineImplementation(chain), epoch)
+		}
+
+		err = chain.PublishNewModelWeights(id, testAddress0)
+		if err != nil {
+			t.Error(determineImplementation(chain), err)
+		}
+
+		epoch, err = chain.ModelEpoch(id)
+		if err != nil {
+			t.Error(determineImplementation(chain), err)
+		} else if epoch != 1 {
+			t.Errorf("%s Expected epoch to be 1 but got %d", determineImplementation(chain), epoch)
 		}
 	}
 }

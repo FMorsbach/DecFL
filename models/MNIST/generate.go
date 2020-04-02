@@ -2,15 +2,18 @@ package MNIST
 
 import (
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/FMorsbach/dlog"
 )
 
+var logger = dlog.New(os.Stderr, "Model", log.Flags(), false)
+
 func init() {
 	if _, exists := os.LookupEnv("DECFL_ROOT"); !exists {
-		dlog.Fatal("DECFL_ROOT is not set.")
+		logger.Fatal("DECFL_ROOT is not set.")
 	}
 }
 
@@ -29,7 +32,7 @@ func loadDataFromDisk(file string) (data string) {
 	if err != nil {
 		dlog.Fatal(err)
 	}
-	dlog.Debugf("Read %d bytes from %s", len(content), file)
+	logger.Debugf("Read %d bytes from %s", len(content), file)
 
 	data = string(content)
 	return
