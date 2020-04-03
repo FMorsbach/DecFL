@@ -12,6 +12,8 @@ import (
 var testConfiguration string
 var testWeights string
 
+var trainer TensorflowTrainer
+
 func init() {
 
 	content, err := ioutil.ReadFile("testdata/configuration.in")
@@ -25,6 +27,11 @@ func init() {
 		panic(err)
 	}
 	testWeights = string(content)
+
+	// TODO work on this
+	if _, exists := os.LookupEnv("DECFL_PYTHON"); !exists {
+		os.Setenv("DECFL_PYTHON", "venv/bin/python")
+	}
 
 	EnableDebug(false)
 }

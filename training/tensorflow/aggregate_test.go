@@ -21,7 +21,7 @@ func TestAggregate(t *testing.T) {
 
 	inputWeights := []string{string(inputWeights0), string(inputWeights1)}
 
-	result, err := Aggregate(inputWeights)
+	result, err := trainer.Aggregate(inputWeights)
 	if err != nil {
 		t.Error((err))
 	}

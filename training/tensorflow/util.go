@@ -8,59 +8,9 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/FMorsbach/DecFL/training"
 	"github.com/FMorsbach/dlog"
 )
-
-const OUTPUT_FILE string = "output.out"
-const CONFIG_FILE string = "config.in"
-const WEIGHTS_FILE string = "weights.in"
-
-var pythonPath = func() string {
-	path, exists := os.LookupEnv("DECFL_PYTHON")
-	if !exists {
-		logger.Fatal("DECFL_PYTHON is not set.")
-	}
-
-	if _, err := os.Stat(path); err == nil {
-		return path
-	} else if os.IsNotExist(err) {
-		panic("DECFL_PYTHON does not point to a valid location")
-	} else {
-		panic(err)
-	}
-}()
-
-var resourcePath = func() string {
-	path, exists := os.LookupEnv("DECFL_RES")
-	if !exists {
-		logger.Fatal("DECFL_RES is not set.")
-	}
-
-	if _, err := os.Stat(path); err == nil {
-		return path
-	} else if os.IsNotExist(err) {
-		panic("DECFL_RES does not point to a valid location")
-	} else {
-		panic(err)
-	}
-}()
-
-var scriptsPath = func() string {
-	path, exists := os.LookupEnv("DECFL_SCRIPTS")
-	if !exists {
-		logger.Fatal("DECFL_SCRIPTS is not set.")
-	}
-
-	if _, err := os.Stat(path); err == nil {
-		return path
-	} else if os.IsNotExist(err) {
-		panic("DECFL_SCRIPTS does not point to a valid location")
-	} else {
-		panic(err)
-	}
-}()
-
-var logger = dlog.New(os.Stderr, "Training - TF: ", log.LstdFlags, false)
 
 type TensorflowError struct {
 	Err          error
@@ -70,6 +20,38 @@ type TensorflowError struct {
 
 func (e *TensorflowError) Error() string {
 	return e.Description + " " + e.Err.Error() + "\n" + e.PythonOutput
+}
+
+type TensorflowTrainer struct {
+}
+
+func NewTensorflowTrainer() training.Trainer {
+	return &TensorflowTrainer{}
+}
+
+const OUTPUT_FILE string = "output.out"
+const CONFIG_FILE string = "config.in"
+const WEIGHTS_FILE string = "weights.in"
+
+var pythonPath = findExternalDependency("DECFL_PYTHON")
+var resourcePath = findExternalDependency("DECFL_RES")
+var scriptsPath = findExternalDependency("DECFL_SCRIPTS")
+
+var logger = dlog.New(os.Stderr, "Training - TF: ", log.LstdFlags, false)
+
+func findExternalDependency(envVar string) string {
+	path, exists := os.LookupEnv(envVar)
+	if !exists {
+		logger.Fatal(envVar, " is not set.")
+	}
+
+	if _, err := os.Stat(path); err == nil {
+		return path
+	} else if os.IsNotExist(err) {
+		panic(fmt.Sprintf("%s %s", envVar, "does not point to a valid location"))
+	} else {
+		panic(err)
+	}
 }
 
 func EnableDebug(b bool) {

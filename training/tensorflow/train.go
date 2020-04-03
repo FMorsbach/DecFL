@@ -16,7 +16,7 @@ func init() {
 }
 
 // Trains the supplied model with local data and returns the updated weights
-func Train(configuration string, weights string) (updatedWeights string, err error) {
+func (t *TensorflowTrainer) Train(configuration string, weights string) (updatedWeights string, err error) {
 
 	updatedWeights, err = trainByFile(configuration, weights)
 	return

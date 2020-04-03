@@ -4,26 +4,25 @@ import (
 	"flag"
 
 	"github.com/FMorsbach/DecFL/communication"
-	"github.com/FMorsbach/DecFL/communication/chain"
-	"github.com/FMorsbach/DecFL/communication/storage"
+	"github.com/FMorsbach/DecFL/communication/mocks"
 	"github.com/FMorsbach/DecFL/control"
+	"github.com/FMorsbach/DecFL/models/MNIST"
 	"github.com/FMorsbach/DecFL/training/tensorflow"
 	"github.com/FMorsbach/dlog"
 )
 
+var ctl control.Control
+
 func init() {
-
-	// TODO: Check if chain reachable
-
-	// TODO: Check if storage reachable
 
 	dlog.SetDebug(true)
 	dlog.SetPrefix("Main: ")
 
-	chain.EnableDebug(false)
-	storage.EnableDebug(false)
-	tensorflow.EnableDebug(false)
-	control.EnableDebug(false)
+	redis := mocks.NewRedis("localhost:6379")
+
+	trainer := tensorflow.NewTensorflowTrainer()
+
+	ctl = control.NewControl(redis, redis, trainer)
 }
 
 func main() {
@@ -38,7 +37,8 @@ func main() {
 	switch command {
 	case "deploy":
 
-		modelID, err := control.Initialize()
+		config, weights := MNIST.GenerateInitialModel()
+		modelID, err := ctl.Initialize(config, weights)
 		if err != nil {
 			dlog.Fatal(err)
 		}
@@ -51,11 +51,17 @@ func main() {
 			dlog.Fatal("You need to specify a model id")
 		}
 
-		err := control.Aggregate(communication.ModelIdentifier(argument))
+		err := ctl.Aggregate(communication.ModelIdentifier(argument))
 		if err != nil {
 			dlog.Fatal(err)
 		}
 		dlog.Println("Aggregated model and upated global weights")
+
+		status, err := ctl.Status(communication.ModelIdentifier(argument))
+		if err != nil {
+			dlog.Fatal(err)
+		}
+		dlog.Println(status)
 
 	default:
 		dlog.Fatal("No valid command provided")

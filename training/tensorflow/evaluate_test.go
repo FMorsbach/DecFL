@@ -10,7 +10,7 @@ func TestEvaluate(t *testing.T) {
 
 	expectedResult := training.EvaluationResults{Loss: 13.646389878750453, Accuracy: 0.9757}
 
-	result, err := Evaluate(testConfiguration, testWeights)
+	result, err := trainer.Evaluate(testConfiguration, testWeights)
 
 	if err != nil {
 		t.Error(err)

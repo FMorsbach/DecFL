@@ -4,7 +4,7 @@ WORKDIR /app
 
 RUN pip install virtualenv
 RUN virtualenv venv
-RUN venv/bin/pip install tensorflow
+RUN venv/bin/pip install tensorflow click
 ENV DECFL_PYTHON /app/venv/bin/python
 
 RUN mkdir scripts

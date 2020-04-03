@@ -9,6 +9,7 @@ import (
 	"github.com/FMorsbach/DecFL/communication/mocks"
 	"github.com/FMorsbach/DecFL/communication/storage"
 	"github.com/FMorsbach/DecFL/control"
+	"github.com/FMorsbach/DecFL/training/tensorflow"
 	"github.com/FMorsbach/dlog"
 )
 
@@ -49,7 +50,8 @@ func init() {
 
 	chain = redis
 	store = redis
-	ctl = control.NewControl(chain, store)
+	trainer := tensorflow.NewTensorflowTrainer()
+	ctl = control.NewControl(chain, store, trainer)
 
 	control.EnableDebug(true)
 }

@@ -8,7 +8,6 @@ import (
 	bc "github.com/FMorsbach/DecFL/communication/chain"
 	"github.com/FMorsbach/DecFL/communication/storage"
 	"github.com/FMorsbach/DecFL/training"
-	"github.com/FMorsbach/DecFL/training/tensorflow"
 	"github.com/FMorsbach/dlog"
 )
 
@@ -20,8 +19,9 @@ type Control interface {
 }
 
 type ctlImpl struct {
-	chain bc.Chain
-	store storage.Storage
+	chain   bc.Chain
+	store   storage.Storage
+	trainer training.Trainer
 }
 
 var logger = dlog.New(os.Stderr, "Control: ", log.LstdFlags, false)
@@ -30,10 +30,11 @@ func EnableDebug(b bool) {
 	logger.SetDebug(b)
 }
 
-func NewControl(ch bc.Chain, st storage.Storage) Control {
+func NewControl(ch bc.Chain, st storage.Storage, tr training.Trainer) Control {
 	return &ctlImpl{
-		chain: ch,
-		store: st,
+		chain:   ch,
+		store:   st,
+		trainer: tr,
 	}
 }
 
@@ -66,7 +67,7 @@ func (ctl *ctlImpl) Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdenti
 	logger.Debug("Loaded model from network")
 
 	// train locally
-	localUpdate, err := tensorflow.Train(config, weights)
+	localUpdate, err := ctl.trainer.Train(config, weights)
 	if err != nil {
 		return
 	}
@@ -113,7 +114,7 @@ func (ctl *ctlImpl) Aggregate(modelID c.ModelIdentifier) (err error) {
 	logger.Debug("Loaded updates from storage")
 
 	// aggregate the local updates
-	globalWeights, err := tensorflow.Aggregate(updates)
+	globalWeights, err := ctl.trainer.Aggregate(updates)
 	if err != nil {
 		return
 	}
@@ -151,7 +152,7 @@ func (ctl *ctlImpl) Status(modelID c.ModelIdentifier) (status training.Evaluatio
 	}
 	logger.Debug("Loaded model from network")
 
-	status, err = tensorflow.Evaluate(config, weights)
+	status, err = ctl.trainer.Evaluate(config, weights)
 	if err != nil {
 		return
 	}

@@ -6,7 +6,7 @@ import (
 
 func TestTrainModel(t *testing.T) {
 
-	updatedWeights, err := Train(testConfiguration, testWeights)
+	updatedWeights, err := trainer.Train(testConfiguration, testWeights)
 	if err != nil {
 		t.Error(err)
 	}
