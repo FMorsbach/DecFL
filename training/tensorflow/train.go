@@ -12,7 +12,7 @@ import (
 var trainScript string
 
 func init() {
-	trainScript = filepath.Join(prefix, "train.py")
+	trainScript = filepath.Join(scriptsPath, "train.py")
 }
 
 // Trains the supplied model with local data and returns the updated weights
@@ -32,7 +32,13 @@ func trainByFile(configuration string, weights string) (updatedWeights string, e
 	}
 	logger.Debugln("Wrote model to disk")
 
-	cmd := exec.Command(pythonPath, trainScript, configPath, weightsPath, outputPath)
+	cmd := exec.Command(
+		pythonPath,
+		trainScript,
+		filepath.Join(resourcePath, CONFIG_FILE),
+		filepath.Join(resourcePath, WEIGHTS_FILE),
+		filepath.Join(resourcePath, OUTPUT_FILE),
+	)
 
 	logger.Debugln("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()

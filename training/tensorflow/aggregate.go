@@ -12,7 +12,7 @@ import (
 var aggregateScript string
 
 func init() {
-	aggregateScript = filepath.Join(prefix, "aggregate.py")
+	aggregateScript = filepath.Join(scriptsPath, "aggregate.py")
 }
 
 func Aggregate(updates []string) (aggregatedWeights string, err error) {
@@ -36,7 +36,14 @@ func Aggregate(updates []string) (aggregatedWeights string, err error) {
 		}()
 	}
 
-	cmd := exec.Command(pythonPath, aggregateScript, resourcePath, outputPath)
+	outputPath := filepath.Join(resourcePath, OUTPUT_FILE)
+
+	cmd := exec.Command(
+		pythonPath,
+		aggregateScript,
+		resourcePath,
+		outputPath,
+	)
 
 	defer func() {
 		err := os.Remove(outputPath)

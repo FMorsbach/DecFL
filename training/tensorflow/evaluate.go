@@ -11,7 +11,7 @@ import (
 var evaluateScript string
 
 func init() {
-	evaluateScript = filepath.Join(prefix, "evaluate.py")
+	evaluateScript = filepath.Join(scriptsPath, "evaluate.py")
 }
 
 func Evaluate(configuration string, weights string) (results training.EvaluationResults, err error) {
@@ -24,7 +24,13 @@ func Evaluate(configuration string, weights string) (results training.Evaluation
 	}
 	logger.Debugln("Wrote model to disk")
 
-	cmd := exec.Command(pythonPath, evaluateScript, configPath, weightsPath, outputPath)
+	cmd := exec.Command(
+		pythonPath,
+		evaluateScript,
+		filepath.Join(resourcePath, CONFIG_FILE),
+		filepath.Join(resourcePath, WEIGHTS_FILE),
+		filepath.Join(resourcePath, OUTPUT_FILE),
+	)
 
 	logger.Debug("Executing: ", cmd.Args)
 	out, err := cmd.CombinedOutput()

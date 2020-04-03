@@ -3,6 +3,7 @@ package tensorflow
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/FMorsbach/dlog"
@@ -13,13 +14,13 @@ var testWeights string
 
 func init() {
 
-	content, err := ioutil.ReadFile("testData/configuration.in")
+	content, err := ioutil.ReadFile("testdata/configuration.in")
 	if err != nil {
 		panic(err)
 	}
 	testConfiguration = string(content)
 
-	content, err = ioutil.ReadFile("testData/initialWeights.in")
+	content, err = ioutil.ReadFile("testdata/initialWeights.in")
 	if err != nil {
 		panic(err)
 	}
@@ -30,10 +31,10 @@ func init() {
 
 func TestCleanUpRessources(t *testing.T) {
 
-	files := []string{configPath, weightsPath, outputPath}
+	files := []string{CONFIG_FILE, WEIGHTS_FILE, OUTPUT_FILE}
 
 	for _, path := range files {
-		err := ioutil.WriteFile(path, []byte("RandomData"), 0644)
+		err := ioutil.WriteFile(filepath.Join(resourcePath, path), []byte("RandomData"), 0644)
 		if err != nil {
 			dlog.Fatal(err)
 		}
@@ -42,7 +43,7 @@ func TestCleanUpRessources(t *testing.T) {
 	cleanUpRessources()
 
 	for _, path := range files {
-		_, err := os.Stat(path)
+		_, err := os.Stat(filepath.Join(resourcePath, path))
 		if err == nil {
 			t.Errorf("%s still exists", path)
 		} else if os.IsNotExist(err) {
@@ -60,7 +61,7 @@ func TestWriteModelToDisk(t *testing.T) {
 		t.Error(err)
 	}
 
-	content, err := ioutil.ReadFile(configPath)
+	content, err := ioutil.ReadFile(filepath.Join(resourcePath, CONFIG_FILE))
 	if err != nil {
 		panic(err)
 	}
@@ -69,7 +70,7 @@ func TestWriteModelToDisk(t *testing.T) {
 		t.Errorf("Wrote %s as configuration but wanted %s", string(content), testConfiguration)
 	}
 
-	content, err = ioutil.ReadFile(weightsPath)
+	content, err = ioutil.ReadFile(filepath.Join(resourcePath, WEIGHTS_FILE))
 	if err != nil {
 		panic(err)
 	}
@@ -83,7 +84,7 @@ func TestWriteModelToDisk(t *testing.T) {
 
 func TestReadModelUpdatesFromDisk(t *testing.T) {
 
-	err := ioutil.WriteFile(outputPath, []byte(testWeights), 0644)
+	err := ioutil.WriteFile(filepath.Join(resourcePath, OUTPUT_FILE), []byte(testWeights), 0644)
 	if err != nil {
 		panic(err)
 	}

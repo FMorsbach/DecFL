@@ -9,12 +9,12 @@ import (
 
 func TestAggregate(t *testing.T) {
 
-	inputWeights0, err := ioutil.ReadFile("testData/0_trainingWeights.in")
+	inputWeights0, err := ioutil.ReadFile("testdata/0_trainingWeights.in")
 	if err != nil {
 		dlog.Fatal(err)
 	}
 
-	inputWeights1, err := ioutil.ReadFile("testData/1_trainingWeights.in")
+	inputWeights1, err := ioutil.ReadFile("testdata/1_trainingWeights.in")
 	if err != nil {
 		dlog.Fatal(err)
 	}
@@ -26,9 +26,9 @@ func TestAggregate(t *testing.T) {
 		t.Error((err))
 	}
 
-	outputWeights, err := ioutil.ReadFile("testData/output.out")
+	outputWeights, err := ioutil.ReadFile("testdata/aggregation_output.out")
 
 	if result != string(outputWeights) {
-		t.Errorf("Aggregation results do not match expected weights from %s", "testData/output.out")
+		t.Errorf("Aggregation results do not match expected weights from %s", "testdata/aggregation_output.out")
 	}
 }
