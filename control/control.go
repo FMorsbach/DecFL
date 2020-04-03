@@ -7,14 +7,13 @@ import (
 	c "github.com/FMorsbach/DecFL/communication"
 	bc "github.com/FMorsbach/DecFL/communication/chain"
 	"github.com/FMorsbach/DecFL/communication/storage"
-	"github.com/FMorsbach/DecFL/models/MNIST"
 	"github.com/FMorsbach/DecFL/training"
 	"github.com/FMorsbach/DecFL/training/tensorflow"
 	"github.com/FMorsbach/dlog"
 )
 
 type Control interface {
-	Initialize() (modelID c.ModelIdentifier, err error)
+	Initialize(configuration string, weights string) (modelID c.ModelIdentifier, err error)
 	Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err error)
 	Aggregate(modelID c.ModelIdentifier) (err error)
 	Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err error)
@@ -38,12 +37,11 @@ func NewControl(ch bc.Chain, st storage.Storage) Control {
 	}
 }
 
-func (ctl *ctlImpl) Initialize() (modelID c.ModelIdentifier, err error) {
+func (ctl *ctlImpl) Initialize(configuration string, weights string) (modelID c.ModelIdentifier, err error) {
 
-	config, weights := MNIST.GenerateInitialModel()
 	logger.Debug("Created initial model")
 
-	configAddress, err := ctl.store.Store(config)
+	configAddress, err := ctl.store.Store(configuration)
 	if err != nil {
 		return
 	}

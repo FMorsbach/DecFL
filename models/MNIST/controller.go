@@ -9,7 +9,7 @@ import (
 	"github.com/FMorsbach/dlog"
 )
 
-var logger = dlog.New(os.Stderr, "Model", log.Flags(), false)
+var logger = dlog.New(os.Stderr, "Model: ", log.Flags(), false)
 
 func init() {
 	if _, exists := os.LookupEnv("DECFL_ROOT"); !exists {
