@@ -16,8 +16,6 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const connection string = "localhost:6379"
-
 const MODEL_CONFIG_KEY string = "globalModelConfiguration"
 const MODEL_WEIGHTS_KEY string = "globalModelWeights"
 const ITERATIONS_KEY string = "iteration"
@@ -34,7 +32,7 @@ type Redis struct {
 	client *redis.Client
 }
 
-func NewRedis() (instance *Redis) {
+func NewRedis(connection string) (instance *Redis) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,

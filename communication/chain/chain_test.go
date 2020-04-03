@@ -26,7 +26,7 @@ func init() {
 
 	//logger.SetDebug(true)
 
-	redis := mocks.NewRedis()
+	redis := mocks.NewRedis("localhost:6379")
 
 	if ok, err := redis.IsReachable(); !ok {
 		logger.Fatal("Cant reach redis for testing", err)

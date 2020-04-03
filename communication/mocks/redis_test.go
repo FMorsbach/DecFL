@@ -10,6 +10,8 @@ import (
 	"github.com/FMorsbach/dlog"
 )
 
+const connection string = "localhost:6379"
+
 // TODO: check if can be imported
 func FillAddress() c.StorageAddress {
 	rand.Seed(time.Now().UnixNano())
@@ -17,14 +19,14 @@ func FillAddress() c.StorageAddress {
 }
 
 func init() {
-	if ok, err := NewRedis().IsReachable(); !ok {
+	if ok, err := NewRedis(connection).IsReachable(); !ok {
 		dlog.Fatal("Cant reach redis: ", err)
 	}
 }
 
 func TestNewRedis(t *testing.T) {
 
-	redis := NewRedis()
+	redis := NewRedis(connection)
 
 	if redis.client.Options().Addr != connection {
 		t.Errorf("Expected %s but got %s", connection, redis.client.Options().Addr)
@@ -33,7 +35,7 @@ func TestNewRedis(t *testing.T) {
 
 func TestFlushRedis(t *testing.T) {
 
-	redis := NewRedis()
+	redis := NewRedis(connection)
 
 	id, err := redis.DeployModel(FillAddress(), FillAddress())
 	if err != nil {

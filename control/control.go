@@ -6,7 +6,6 @@ import (
 
 	c "github.com/FMorsbach/DecFL/communication"
 	bc "github.com/FMorsbach/DecFL/communication/chain"
-	"github.com/FMorsbach/DecFL/communication/mocks"
 	"github.com/FMorsbach/DecFL/communication/storage"
 	"github.com/FMorsbach/DecFL/models/MNIST"
 	"github.com/FMorsbach/DecFL/training"
@@ -14,38 +13,55 @@ import (
 	"github.com/FMorsbach/dlog"
 )
 
+type Control interface {
+	Initialize() (modelID c.ModelIdentifier, err error)
+	Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err error)
+	Aggregate(modelID c.ModelIdentifier) (err error)
+	Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err error)
+}
+
+type ctlImpl struct {
+	chain bc.Chain
+	store storage.Storage
+}
+
 var logger = dlog.New(os.Stderr, "Control: ", log.LstdFlags, false)
-var chain bc.Chain = mocks.NewRedis()
-var store storage.Storage = mocks.NewRedis()
 
 func EnableDebug(b bool) {
 	logger.SetDebug(b)
 }
 
-func Initialize() (modelID c.ModelIdentifier, err error) {
+func NewControl(ch bc.Chain, st storage.Storage) Control {
+	return &ctlImpl{
+		chain: ch,
+		store: st,
+	}
+}
+
+func (ctl *ctlImpl) Initialize() (modelID c.ModelIdentifier, err error) {
 
 	config, weights := MNIST.GenerateInitialModel()
 	logger.Debug("Created initial model")
 
-	configAddress, err := store.Store(config)
+	configAddress, err := ctl.store.Store(config)
 	if err != nil {
 		return
 	}
 
-	weightsAddress, err := store.Store(weights)
+	weightsAddress, err := ctl.store.Store(weights)
 	if err != nil {
 		return
 	}
 	logger.Debugf("Wrote initial model to storage at %s and %s", configAddress, weightsAddress)
 
-	modelID, err = chain.DeployModel(configAddress, weightsAddress)
+	modelID, err = ctl.chain.DeployModel(configAddress, weightsAddress)
 	logger.Debug(("Wrote initial model addresses to chain"))
 	return
 }
 
-func Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err error) {
+func (ctl *ctlImpl) Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err error) {
 
-	config, weights, err := globalModel(modelID)
+	config, weights, err := ctl.globalModel(modelID)
 	if err != nil {
 		return err
 	}
@@ -59,7 +75,7 @@ func Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err erro
 	logger.Debug("Trained local model")
 
 	// write the update to the storage
-	updateAddress, err := store.Store(localUpdate)
+	updateAddress, err := ctl.store.Store(localUpdate)
 	if err != nil {
 		return
 	}
@@ -70,7 +86,7 @@ func Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err erro
 		Address: updateAddress,
 	}
 	// write the address of the stored update to the chain
-	err = chain.SubmitLocalUpdate(modelID, update)
+	err = ctl.chain.SubmitLocalUpdate(modelID, update)
 	if err != nil {
 		return
 	}
@@ -79,10 +95,10 @@ func Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err erro
 	return
 }
 
-func Aggregate(modelID c.ModelIdentifier) (err error) {
+func (ctl *ctlImpl) Aggregate(modelID c.ModelIdentifier) (err error) {
 
 	// load the local udpate addresses from the chain
-	localUpdates, err := chain.LocalUpdates(modelID)
+	localUpdates, err := ctl.chain.LocalUpdates(modelID)
 	if err != nil {
 		return
 	}
@@ -91,7 +107,7 @@ func Aggregate(modelID c.ModelIdentifier) (err error) {
 	// load the local updates from storage
 	updates := make([]string, len(localUpdates))
 	for i, localUpdate := range localUpdates {
-		updates[i], err = store.Load(localUpdate.Address)
+		updates[i], err = ctl.store.Load(localUpdate.Address)
 		if err != nil {
 			return
 		}
@@ -106,21 +122,21 @@ func Aggregate(modelID c.ModelIdentifier) (err error) {
 	logger.Debug("Aggregated updates")
 
 	// write the new global weights to storage
-	globalWeightsAddress, err := store.Store(globalWeights)
+	globalWeightsAddress, err := ctl.store.Store(globalWeights)
 	if err != nil {
 		return
 	}
 	logger.Debugf("Wrote new weights to storage at %s", globalWeightsAddress)
 
 	// write the new global weights storage address to the chain
-	err = chain.PublishNewModelWeights(modelID, globalWeightsAddress)
+	err = ctl.chain.PublishNewModelWeights(modelID, globalWeightsAddress)
 	if err != nil {
 		return
 	}
 	logger.Debug("Wrote new weight address to chain")
 
 	// empty the local update storage
-	err = chain.ClearLocalUpdateAddresses(modelID)
+	err = ctl.chain.ClearLocalUpdateAddresses(modelID)
 	if err != nil {
 		return
 	}
@@ -129,9 +145,9 @@ func Aggregate(modelID c.ModelIdentifier) (err error) {
 	return
 }
 
-func Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err error) {
+func (ctl *ctlImpl) Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err error) {
 
-	config, weights, err := globalModel(modelID)
+	config, weights, err := ctl.globalModel(modelID)
 	if err != nil {
 		return
 	}
@@ -146,25 +162,25 @@ func Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err e
 	return
 }
 
-func globalModel(modelID c.ModelIdentifier) (config string, weights string, err error) {
+func (ctl *ctlImpl) globalModel(modelID c.ModelIdentifier) (config string, weights string, err error) {
 	// load the storage addresses from the chain
-	configAddress, err := chain.ModelConfigurationAddress(modelID)
+	configAddress, err := ctl.chain.ModelConfigurationAddress(modelID)
 	if err != nil {
 		return
 	}
 
-	weightsAddress, err := chain.GlobalWeightsAddress(modelID)
+	weightsAddress, err := ctl.chain.GlobalWeightsAddress(modelID)
 	if err != nil {
 		return
 	}
 
 	// load the model from the storage
-	config, err = store.Load(configAddress)
+	config, err = ctl.store.Load(configAddress)
 	if err != nil {
 		return
 	}
 
-	weights, err = store.Load(weightsAddress)
+	weights, err = ctl.store.Load(weightsAddress)
 	if err != nil {
 		return
 	}
