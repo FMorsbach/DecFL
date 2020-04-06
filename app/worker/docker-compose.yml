@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  worker1:
+    image: "worker:v1"
+    environment:  
+      - MODEL=${MODEL}
+      - TRAINER=1
+      - REDIS=redis1:6379
+  worker2:
+    image: "worker:v1"
+    environment:  
+      - MODEL=${MODEL}
+      - TRAINER=2
+      - REDIS=redis1:6379
+  worker3:
+    image: "worker:v1"
+    environment:  
+      - MODEL=${MODEL}
+      - TRAINER=3
+      - REDIS=redis1:6379
+
+
+networks:
+  default:
+    external:
+      name: myNet

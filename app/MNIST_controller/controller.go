@@ -19,6 +19,9 @@ func init() {
 	dlog.SetPrefix("Main: ")
 
 	redis := mocks.NewRedis("localhost:6379")
+	if ok, err := redis.IsReachable(); !ok {
+		dlog.Fatal(err)
+	}
 
 	trainer := tensorflow.NewTensorflowTrainer()
 
@@ -31,7 +34,7 @@ func main() {
 	var argument string
 
 	flag.StringVar(&command, "cmd", "", "What do you want to do? deploy / aggregate")
-	flag.StringVar(&argument, "argument", "", "What argument? model type / model id")
+	flag.StringVar(&argument, "arg", "", "What argument? model type / model id")
 	flag.Parse()
 
 	switch command {

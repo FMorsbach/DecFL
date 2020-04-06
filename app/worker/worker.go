@@ -45,8 +45,10 @@ func init() {
 	redis := mocks.NewRedis(redisConnection)
 
 	if ok, err := redis.IsReachable(); !ok {
-		dlog.Fatal("Cant reach redis", err)
+		dlog.Fatal("Cant reach redis: ", err)
 	}
+
+	dlog.Printf("Working on model %s as trainer %s connected to %s\n", modelID, trainerID, redisConnection)
 
 	chain = redis
 	store = redis

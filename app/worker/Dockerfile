@@ -18,6 +18,6 @@ COPY worker /app/worker
 #TODO remove
 COPY scripts /app/scripts
 
-CMD [ "/bin/bash" ]
+ENTRYPOINT ./worker -model=$MODEL -trainer=$TRAINER -redis=$REDIS
 
 
