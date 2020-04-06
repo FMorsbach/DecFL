@@ -22,11 +22,11 @@ func (e *TensorflowError) Error() string {
 	return e.Description + " " + e.Err.Error() + "\n" + e.PythonOutput
 }
 
-type TensorflowTrainer struct {
+type TensorflowFramework struct {
 }
 
-func NewTensorflowTrainer() training.Trainer {
-	return &TensorflowTrainer{}
+func NewTensorflowMLF() training.MLFramework {
+	return &TensorflowFramework{}
 }
 
 const OUTPUT_FILE string = "output.out"

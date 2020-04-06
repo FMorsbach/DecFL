@@ -15,7 +15,7 @@ func init() {
 	aggregateScript = filepath.Join(scriptsPath, "aggregate.py")
 }
 
-func (t *TensorflowTrainer) Aggregate(updates []string) (aggregatedWeights string, err error) {
+func (t *TensorflowFramework) Aggregate(updates []string) (aggregatedWeights string, err error) {
 
 	defer cleanUpRessources()
 

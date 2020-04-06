@@ -12,7 +12,7 @@ import (
 var testConfiguration string
 var testWeights string
 
-var trainer TensorflowTrainer
+var trainer TensorflowFramework
 
 func init() {
 

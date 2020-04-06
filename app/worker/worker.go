@@ -14,7 +14,7 @@ import (
 )
 
 var modelID communication.ModelIdentifier
-var trainerID communication.TrainerIdentifier
+var nodeID communication.TrainerIdentifier
 
 var chain bc.Chain
 var store storage.Storage
@@ -23,20 +23,20 @@ var ctl control.Control
 func init() {
 
 	modelPtr := flag.String("model", "", "The model the worker should work on")
-	trainerPtr := flag.String("trainer", "", "The id of this worker node")
+	nodeIDPtr := flag.String("trainer", "", "The id of this worker node")
 	redisConnectionPtr := flag.String("redis", "", "The connection identifier to redis")
 
 	flag.Parse()
 
 	modelID = communication.ModelIdentifier(*modelPtr)
-	trainerID = communication.TrainerIdentifier(*trainerPtr)
+	nodeID = communication.TrainerIdentifier(*nodeIDPtr)
 	redisConnection := *redisConnectionPtr
 
 	if modelID == "" {
 		dlog.Fatal("No model id provided")
 	}
-	if trainerID == "" {
-		dlog.Fatal("No trainer id provided")
+	if nodeID == "" {
+		dlog.Fatal("No node id provided")
 	}
 	if redisConnection == "" {
 		dlog.Fatal("No redis connection provided")
@@ -48,11 +48,11 @@ func init() {
 		dlog.Fatal("Cant reach redis: ", err)
 	}
 
-	dlog.Printf("Working on model %s as trainer %s connected to %s\n", modelID, trainerID, redisConnection)
+	dlog.Printf("Working on model %s as node %s connected to %s\n", modelID, nodeID, redisConnection)
 
 	chain = redis
 	store = redis
-	trainer := tensorflow.NewTensorflowTrainer()
+	trainer := tensorflow.NewTensorflowMLF()
 	ctl = control.NewControl(chain, store, trainer)
 
 	control.EnableDebug(true)
@@ -73,7 +73,7 @@ func main() {
 			time.Sleep(time.Second)
 			continue
 		} else {
-			err := ctl.Iterate(modelID, trainerID)
+			err := ctl.Iterate(modelID, nodeID)
 			if err != nil {
 				dlog.Println(err)
 			}

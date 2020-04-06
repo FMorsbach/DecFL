@@ -23,7 +23,7 @@ func init() {
 		dlog.Fatal(err)
 	}
 
-	trainer := tensorflow.NewTensorflowTrainer()
+	trainer := tensorflow.NewTensorflowMLF()
 
 	ctl = control.NewControl(redis, redis, trainer)
 }

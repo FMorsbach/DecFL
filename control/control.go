@@ -19,9 +19,9 @@ type Control interface {
 }
 
 type ctlImpl struct {
-	chain   bc.Chain
-	store   storage.Storage
-	trainer training.Trainer
+	chain bc.Chain
+	store storage.Storage
+	mlf   training.MLFramework
 }
 
 var logger = dlog.New(os.Stderr, "Control: ", log.LstdFlags, false)
@@ -30,11 +30,11 @@ func EnableDebug(b bool) {
 	logger.SetDebug(b)
 }
 
-func NewControl(ch bc.Chain, st storage.Storage, tr training.Trainer) Control {
+func NewControl(ch bc.Chain, st storage.Storage, mlf training.MLFramework) Control {
 	return &ctlImpl{
-		chain:   ch,
-		store:   st,
-		trainer: tr,
+		chain: ch,
+		store: st,
+		mlf:   mlf,
 	}
 }
 
@@ -67,7 +67,7 @@ func (ctl *ctlImpl) Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdenti
 	logger.Debug("Loaded model from network")
 
 	// train locally
-	localUpdate, err := ctl.trainer.Train(config, weights)
+	localUpdate, err := ctl.mlf.Train(config, weights)
 	if err != nil {
 		return
 	}
@@ -114,7 +114,7 @@ func (ctl *ctlImpl) Aggregate(modelID c.ModelIdentifier) (err error) {
 	logger.Debug("Loaded updates from storage")
 
 	// aggregate the local updates
-	globalWeights, err := ctl.trainer.Aggregate(updates)
+	globalWeights, err := ctl.mlf.Aggregate(updates)
 	if err != nil {
 		return
 	}
@@ -152,7 +152,7 @@ func (ctl *ctlImpl) Status(modelID c.ModelIdentifier) (status training.Evaluatio
 	}
 	logger.Debug("Loaded model from network")
 
-	status, err = ctl.trainer.Evaluate(config, weights)
+	status, err = ctl.mlf.Evaluate(config, weights)
 	if err != nil {
 		return
 	}

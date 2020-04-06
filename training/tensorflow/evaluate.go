@@ -14,7 +14,7 @@ func init() {
 	evaluateScript = filepath.Join(scriptsPath, "evaluate.py")
 }
 
-func (t *TensorflowTrainer) Evaluate(configuration string, weights string) (results training.EvaluationResults, err error) {
+func (t *TensorflowFramework) Evaluate(configuration string, weights string) (results training.EvaluationResults, err error) {
 
 	defer cleanUpRessources()
 
