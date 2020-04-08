@@ -12,6 +12,7 @@ import (
 	"time"
 
 	c "github.com/FMorsbach/DecFL/communication"
+	"github.com/FMorsbach/DecFL/communication/chain"
 	"github.com/FMorsbach/dlog"
 	"github.com/go-redis/redis"
 )
@@ -43,7 +44,7 @@ func NewRedis(connection string) (instance *Redis) {
 	return &Redis{client: client}
 }
 
-func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.StorageAddress) (id c.ModelIdentifier, err error) {
+func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.StorageAddress, params chain.Hyperparameters) (id c.ModelIdentifier, err error) {
 
 	rand.Seed(time.Now().UnixNano())
 	id = c.ModelIdentifier(strconv.Itoa(rand.Intn(10000)))
@@ -92,7 +93,7 @@ func (r *Redis) GlobalWeightsAddress(id c.ModelIdentifier) (address c.StorageAdd
 	return
 }
 
-func (r *Redis) PublishNewModelWeights(id c.ModelIdentifier, address c.StorageAddress) (err error) {
+func (r *Redis) SubmitAggregation(id c.ModelIdentifier, address c.StorageAddress) (err error) {
 
 	err = r.client.Set(key(id, MODEL_WEIGHTS_KEY), string(address), 0).Err()
 	if err != nil {

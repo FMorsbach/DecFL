@@ -12,7 +12,7 @@ import (
 )
 
 type Control interface {
-	Initialize(configuration string, weights string) (modelID c.ModelIdentifier, err error)
+	Initialize(configuration string, weights string, params bc.Hyperparameters) (modelID c.ModelIdentifier, err error)
 	Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err error)
 	Aggregate(modelID c.ModelIdentifier) (err error)
 	Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err error)
@@ -38,7 +38,7 @@ func NewControl(ch bc.Chain, st storage.Storage, mlf training.MLFramework) Contr
 	}
 }
 
-func (ctl *ctlImpl) Initialize(configuration string, weights string) (modelID c.ModelIdentifier, err error) {
+func (ctl *ctlImpl) Initialize(configuration string, weights string, params bc.Hyperparameters) (modelID c.ModelIdentifier, err error) {
 
 	logger.Debug("Created initial model")
 
@@ -53,7 +53,7 @@ func (ctl *ctlImpl) Initialize(configuration string, weights string) (modelID c.
 	}
 	logger.Debugf("Wrote initial model to storage at %s and %s", configAddress, weightsAddress)
 
-	modelID, err = ctl.chain.DeployModel(configAddress, weightsAddress)
+	modelID, err = ctl.chain.DeployModel(configAddress, weightsAddress, params)
 	logger.Debug(("Wrote initial model addresses to chain"))
 	return
 }
@@ -128,18 +128,11 @@ func (ctl *ctlImpl) Aggregate(modelID c.ModelIdentifier) (err error) {
 	logger.Debugf("Wrote new weights to storage at %s", globalWeightsAddress)
 
 	// write the new global weights storage address to the chain
-	err = ctl.chain.PublishNewModelWeights(modelID, globalWeightsAddress)
+	err = ctl.chain.SubmitAggregation(modelID, globalWeightsAddress)
 	if err != nil {
 		return
 	}
 	logger.Debug("Wrote new weight address to chain")
-
-	// empty the local update storage
-	err = ctl.chain.ClearLocalUpdateAddresses(modelID)
-	if err != nil {
-		return
-	}
-	logger.Debug("Cleaned local update list on chain")
 
 	return
 }

@@ -4,6 +4,7 @@ import (
 	"flag"
 
 	"github.com/FMorsbach/DecFL/communication"
+	"github.com/FMorsbach/DecFL/communication/chain"
 	"github.com/FMorsbach/DecFL/communication/mocks"
 	"github.com/FMorsbach/DecFL/control"
 	"github.com/FMorsbach/DecFL/models/MNIST"
@@ -41,7 +42,7 @@ func main() {
 	case "deploy":
 
 		config, weights := MNIST.GenerateInitialModel()
-		modelID, err := ctl.Initialize(config, weights)
+		modelID, err := ctl.Initialize(config, weights, chain.Hyperparameters{UpdatesTillAggregation: 3})
 		if err != nil {
 			dlog.Fatal(err)
 		}
