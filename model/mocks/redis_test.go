@@ -6,24 +6,23 @@ import (
 	"testing"
 	"time"
 
-	c "github.com/FMorsbach/DecFL/communication"
-	"github.com/FMorsbach/DecFL/communication/chain"
-	"github.com/FMorsbach/DecFL/communication/chain/interface_tests"
+	"github.com/FMorsbach/DecFL/model/chain/interface_tests"
+	"github.com/FMorsbach/DecFL/model/common"
 	"github.com/FMorsbach/dlog"
 )
 
 const connection string = "localhost:6379"
 
-var testAddress0 c.StorageAddress = FillAddress()
-var testAddress1 c.StorageAddress = FillAddress()
-var testAddress2 c.StorageAddress = FillAddress()
-var trainerID c.TrainerIdentifier
+var testAddress0 common.StorageAddress = FillAddress()
+var testAddress1 common.StorageAddress = FillAddress()
+var testAddress2 common.StorageAddress = FillAddress()
+var trainerID common.TrainerIdentifier
 
 var redis1 *Redis
 
-func FillAddress() c.StorageAddress {
+func FillAddress() common.StorageAddress {
 	rand.Seed(time.Now().UnixNano())
-	return c.StorageAddress(strconv.Itoa(rand.Int()))
+	return common.StorageAddress(strconv.Itoa(rand.Int()))
 }
 
 func init() {
@@ -44,7 +43,7 @@ func TestNewRedis(t *testing.T) {
 
 func TestFlushRedis(t *testing.T) {
 
-	id, err := redis1.DeployModel(testAddress0, testAddress1, chain.Hyperparameters{UpdatesTillAggregation: 3})
+	id, err := redis1.DeployModel(testAddress0, testAddress1, common.Hyperparameters{UpdatesTillAggregation: 3})
 	if err != nil {
 		t.Error(err)
 	}
@@ -65,12 +64,12 @@ func TestFlushRedis(t *testing.T) {
 
 func TestClearLocalUpdateAddresses(t *testing.T) {
 
-	modelID, err := redis1.DeployModel(testAddress0, testAddress1, chain.Hyperparameters{UpdatesTillAggregation: 3})
+	modelID, err := redis1.DeployModel(testAddress0, testAddress1, common.Hyperparameters{UpdatesTillAggregation: 3})
 	if err != nil {
 		t.Error(err)
 	}
 
-	update := c.Update{
+	update := common.Update{
 		Trainer: trainerID,
 		Address: testAddress2,
 	}

@@ -11,8 +11,7 @@ import (
 	"strconv"
 	"time"
 
-	c "github.com/FMorsbach/DecFL/communication"
-	"github.com/FMorsbach/DecFL/communication/chain"
+	"github.com/FMorsbach/DecFL/model/common"
 	"github.com/FMorsbach/dlog"
 	"github.com/go-redis/redis"
 )
@@ -44,10 +43,10 @@ func NewRedis(connection string) (instance *Redis) {
 	return &Redis{client: client}
 }
 
-func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.StorageAddress, params chain.Hyperparameters) (id c.ModelIdentifier, err error) {
+func (r *Redis) DeployModel(configAddress common.StorageAddress, weightsAddress common.StorageAddress, params common.Hyperparameters) (id common.ModelIdentifier, err error) {
 
 	rand.Seed(time.Now().UnixNano())
-	id = c.ModelIdentifier(strconv.Itoa(rand.Intn(10000)))
+	id = common.ModelIdentifier(strconv.Itoa(rand.Intn(10000)))
 	logger.Debugf("Generated %s as model id", id)
 
 	err = r.client.Set(key(id, MODEL_CONFIG_KEY), string(configAddress), 0).Err()
@@ -71,29 +70,29 @@ func (r *Redis) DeployModel(configAddress c.StorageAddress, weightsAddress c.Sto
 	return
 }
 
-func (r *Redis) ModelConfigurationAddress(id c.ModelIdentifier) (address c.StorageAddress, err error) {
+func (r *Redis) ModelConfigurationAddress(id common.ModelIdentifier) (address common.StorageAddress, err error) {
 
 	temp, err := r.client.Get(key(id, MODEL_CONFIG_KEY)).Result()
 	if err != nil {
 		return
 	}
-	address = c.StorageAddress(temp)
+	address = common.StorageAddress(temp)
 
 	return
 }
 
-func (r *Redis) GlobalWeightsAddress(id c.ModelIdentifier) (address c.StorageAddress, err error) {
+func (r *Redis) GlobalWeightsAddress(id common.ModelIdentifier) (address common.StorageAddress, err error) {
 
 	temp, err := r.client.Get(key(id, MODEL_WEIGHTS_KEY)).Result()
 	if err != nil {
 		return
 	}
-	address = c.StorageAddress(temp)
+	address = common.StorageAddress(temp)
 
 	return
 }
 
-func (r *Redis) SubmitAggregation(id c.ModelIdentifier, address c.StorageAddress) (err error) {
+func (r *Redis) SubmitAggregation(id common.ModelIdentifier, address common.StorageAddress) (err error) {
 
 	err = r.client.Set(key(id, MODEL_WEIGHTS_KEY), string(address), 0).Err()
 	if err != nil {
@@ -115,7 +114,7 @@ func (r *Redis) SubmitAggregation(id c.ModelIdentifier, address c.StorageAddress
 	return
 }
 
-func (r *Redis) SubmitLocalUpdate(modelID c.ModelIdentifier, update c.Update) (err error) {
+func (r *Redis) SubmitLocalUpdate(modelID common.ModelIdentifier, update common.Update) (err error) {
 
 	data, err := json.Marshal(update)
 	if err != nil {
@@ -130,16 +129,16 @@ func (r *Redis) SubmitLocalUpdate(modelID c.ModelIdentifier, update c.Update) (e
 	return
 }
 
-func (r *Redis) LocalUpdates(id c.ModelIdentifier) (addresses []c.Update, err error) {
+func (r *Redis) LocalUpdates(id common.ModelIdentifier) (addresses []common.Update, err error) {
 
 	temp, err := r.client.SMembers(key(id, LOCAL_UPDATES_KEY)).Result()
 	if err != nil {
 		return
 	}
 
-	addresses = make([]c.Update, len(temp))
+	addresses = make([]common.Update, len(temp))
 	for i, t := range temp {
-		var data c.Update
+		var data common.Update
 		err = json.Unmarshal([]byte(t), &data)
 		if err != nil {
 			return
@@ -150,7 +149,7 @@ func (r *Redis) LocalUpdates(id c.ModelIdentifier) (addresses []c.Update, err er
 	return
 }
 
-func (r *Redis) ClearLocalUpdateAddresses(id c.ModelIdentifier) (err error) {
+func (r *Redis) ClearLocalUpdateAddresses(id common.ModelIdentifier) (err error) {
 
 	err = r.client.Del(key(id, LOCAL_UPDATES_KEY)).Err()
 	if err != nil {
@@ -161,7 +160,7 @@ func (r *Redis) ClearLocalUpdateAddresses(id c.ModelIdentifier) (err error) {
 	return
 }
 
-func (r *Redis) ModelEpoch(id c.ModelIdentifier) (epoch int, err error) {
+func (r *Redis) ModelEpoch(id common.ModelIdentifier) (epoch int, err error) {
 
 	temp, err := r.client.Get(key(id, MODEL_EPOCH_KEY)).Result()
 	if err != nil {
@@ -196,15 +195,15 @@ func (r *Redis) IsReachable() (reachable bool, err error) {
 	}
 }
 
-func key(id c.ModelIdentifier, key string) string {
+func key(id common.ModelIdentifier, key string) string {
 	return fmt.Sprintf("%s-%s", string(id), key)
 }
 
-func (r *Redis) Store(content string) (address c.StorageAddress, err error) {
+func (r *Redis) Store(content string) (address common.StorageAddress, err error) {
 
 	h := sha256.Sum256([]byte(content))
 	dh := h[0:32]
-	address = c.StorageAddress(hex.EncodeToString(dh))
+	address = common.StorageAddress(hex.EncodeToString(dh))
 
 	err = r.client.Set(string(address), content, 0).Err()
 	if err != nil {
@@ -215,7 +214,7 @@ func (r *Redis) Store(content string) (address c.StorageAddress, err error) {
 	return
 }
 
-func (r *Redis) Load(address c.StorageAddress) (content string, err error) {
+func (r *Redis) Load(address common.StorageAddress) (content string, err error) {
 
 	content, err = r.client.Get(string(address)).Result()
 	if err == redis.Nil {

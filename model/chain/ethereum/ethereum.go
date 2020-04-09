@@ -8,12 +8,12 @@ import (
 	"math/big"
 	"os"
 
-	com "github.com/FMorsbach/DecFL/communication"
-	"github.com/FMorsbach/DecFL/communication/chain"
-	"github.com/FMorsbach/DecFL/communication/chain/ethereum/contract"
+	"github.com/FMorsbach/DecFL/model/chain"
+	"github.com/FMorsbach/DecFL/model/chain/ethereum/contract"
+	"github.com/FMorsbach/DecFL/model/common"
 	"github.com/FMorsbach/dlog"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
+	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
@@ -28,7 +28,7 @@ type ethereumChain struct {
 	client        ethclient.Client
 	privateKey    ecdsa.PrivateKey
 	publicKey     ecdsa.PublicKey
-	publicAddress common.Address
+	publicAddress ethCommon.Address
 }
 
 func NewEthereum(chainAddress string, key string) (instance chain.Chain, err error) {
@@ -59,7 +59,7 @@ func NewEthereum(chainAddress string, key string) (instance chain.Chain, err err
 	}, nil
 }
 
-func (c *ethereumChain) DeployModel(configAddress com.StorageAddress, weightsAddress com.StorageAddress, params chain.Hyperparameters) (id com.ModelIdentifier, err error) {
+func (c *ethereumChain) DeployModel(configAddress common.StorageAddress, weightsAddress common.StorageAddress, params common.Hyperparameters) (id common.ModelIdentifier, err error) {
 
 	nonce, err := c.client.PendingNonceAt(context.Background(), c.publicAddress)
 	if err != nil {
@@ -89,15 +89,15 @@ func (c *ethereumChain) DeployModel(configAddress com.StorageAddress, weightsAdd
 		return
 	}
 
-	id = com.ModelIdentifier(address.Hex())
+	id = common.ModelIdentifier(address.Hex())
 	logger.Debugf("Deployed contract in transaction %s", tx.Hash().Hex())
 
 	return
 }
 
-func (c *ethereumChain) ModelConfigurationAddress(id com.ModelIdentifier) (address com.StorageAddress, err error) {
+func (c *ethereumChain) ModelConfigurationAddress(id common.ModelIdentifier) (address common.StorageAddress, err error) {
 
-	instance, err := contract.NewContract(common.HexToAddress(string(id)), &(c.client))
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
 	if err != nil {
 		return
 	}
@@ -107,13 +107,13 @@ func (c *ethereumChain) ModelConfigurationAddress(id com.ModelIdentifier) (addre
 		return
 	}
 
-	address = com.StorageAddress(value)
+	address = common.StorageAddress(value)
 	return
 }
 
-func (c *ethereumChain) GlobalWeightsAddress(id com.ModelIdentifier) (address com.StorageAddress, err error) {
+func (c *ethereumChain) GlobalWeightsAddress(id common.ModelIdentifier) (address common.StorageAddress, err error) {
 
-	instance, err := contract.NewContract(common.HexToAddress(string(id)), &(c.client))
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
 	if err != nil {
 		return
 	}
@@ -123,13 +123,13 @@ func (c *ethereumChain) GlobalWeightsAddress(id com.ModelIdentifier) (address co
 		return
 	}
 
-	address = com.StorageAddress(value)
+	address = common.StorageAddress(value)
 	return
 }
 
-func (c *ethereumChain) SubmitAggregation(id com.ModelIdentifier, address com.StorageAddress) (err error) {
+func (c *ethereumChain) SubmitAggregation(id common.ModelIdentifier, address common.StorageAddress) (err error) {
 
-	instance, err := contract.NewContract(common.HexToAddress(string(id)), &(c.client))
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
 	if err != nil {
 		return
 	}
@@ -160,9 +160,9 @@ func (c *ethereumChain) SubmitAggregation(id com.ModelIdentifier, address com.St
 	return
 }
 
-func (c *ethereumChain) SubmitLocalUpdate(id com.ModelIdentifier, update com.Update) (err error) {
+func (c *ethereumChain) SubmitLocalUpdate(id common.ModelIdentifier, update common.Update) (err error) {
 
-	instance, err := contract.NewContract(common.HexToAddress(string(id)), &(c.client))
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
 	if err != nil {
 		return
 	}
@@ -193,9 +193,9 @@ func (c *ethereumChain) SubmitLocalUpdate(id com.ModelIdentifier, update com.Upd
 	return
 }
 
-func (c *ethereumChain) LocalUpdates(id com.ModelIdentifier) (updates []com.Update, err error) {
+func (c *ethereumChain) LocalUpdates(id common.ModelIdentifier) (updates []common.Update, err error) {
 
-	instance, err := contract.NewContract(common.HexToAddress(string(id)), &(c.client))
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
 	if err != nil {
 		return
 	}
@@ -211,18 +211,18 @@ func (c *ethereumChain) LocalUpdates(id com.ModelIdentifier) (updates []com.Upda
 		if err != nil {
 			return nil, err
 		}
-		updates = append(updates, com.Update{
-			Trainer: com.TrainerIdentifier(update.Trainer),
-			Address: com.StorageAddress(update.StorageAddress),
+		updates = append(updates, common.Update{
+			Trainer: common.TrainerIdentifier(update.Trainer),
+			Address: common.StorageAddress(update.StorageAddress),
 		})
 	}
 
 	return
 }
 
-func (c *ethereumChain) ModelEpoch(id com.ModelIdentifier) (epoch int, err error) {
+func (c *ethereumChain) ModelEpoch(id common.ModelIdentifier) (epoch int, err error) {
 
-	instance, err := contract.NewContract(common.HexToAddress(string(id)), &(c.client))
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
 	if err != nil {
 		return
 	}

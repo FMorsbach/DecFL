@@ -3,7 +3,7 @@ package tensorflow
 import (
 	"testing"
 
-	"github.com/FMorsbach/DecFL/training"
+	"github.com/FMorsbach/DecFL/model/training"
 )
 
 func TestEvaluate(t *testing.T) {

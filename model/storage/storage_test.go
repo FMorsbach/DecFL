@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/FMorsbach/DecFL/communication/mocks"
+	"github.com/FMorsbach/DecFL/model/mocks"
 )
 
 var content0 string = generateRandomContent()

@@ -5,7 +5,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/FMorsbach/DecFL/training"
+	"github.com/FMorsbach/DecFL/model/training"
 )
 
 var evaluateScript string

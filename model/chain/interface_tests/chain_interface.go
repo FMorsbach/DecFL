@@ -6,26 +6,26 @@ import (
 	"testing"
 	"time"
 
-	com "github.com/FMorsbach/DecFL/communication"
-	chainPkg "github.com/FMorsbach/DecFL/communication/chain"
+	"github.com/FMorsbach/DecFL/model/chain"
+	"github.com/FMorsbach/DecFL/model/common"
 )
 
-var testConfigAddress com.StorageAddress = FillAddress()
-var testWeightsAddress com.StorageAddress = FillAddress()
+var testConfigAddress common.StorageAddress = FillAddress()
+var testWeightsAddress common.StorageAddress = FillAddress()
 
-func FillAddress() com.StorageAddress {
+func FillAddress() common.StorageAddress {
 	rand.Seed(time.Now().UnixNano())
-	return com.StorageAddress(strconv.Itoa(rand.Int()))
+	return common.StorageAddress(strconv.Itoa(rand.Int()))
 }
 
 // TODO: Maybe add tests for wrong modelIds ?
 
-func DeployModelAndReadModel(chain chainPkg.Chain, t *testing.T) {
+func DeployModelAndReadModel(chain chain.Chain, t *testing.T) {
 
 	id, err := chain.DeployModel(
 		testConfigAddress,
 		testWeightsAddress,
-		chainPkg.Hyperparameters{UpdatesTillAggregation: 3})
+		common.Hyperparameters{UpdatesTillAggregation: 3})
 	if err != nil {
 		t.Error(err)
 	}
@@ -47,12 +47,12 @@ func DeployModelAndReadModel(chain chainPkg.Chain, t *testing.T) {
 	}
 }
 
-func LocalUpdateSubmission(chain chainPkg.Chain, trainerID com.TrainerIdentifier, t *testing.T) {
+func LocalUpdateSubmission(chain chain.Chain, trainerID common.TrainerIdentifier, t *testing.T) {
 
 	modelID, err := chain.DeployModel(
 		testConfigAddress,
 		testWeightsAddress,
-		chainPkg.Hyperparameters{UpdatesTillAggregation: 3})
+		common.Hyperparameters{UpdatesTillAggregation: 3})
 	if err != nil {
 		t.Error(err)
 	}
@@ -65,7 +65,7 @@ func LocalUpdateSubmission(chain chainPkg.Chain, trainerID com.TrainerIdentifier
 	count := len(updates)
 
 	randomTestAddress1 := FillAddress()
-	update := com.Update{
+	update := common.Update{
 		Trainer: trainerID,
 		Address: randomTestAddress1,
 	}
@@ -86,31 +86,31 @@ func LocalUpdateSubmission(chain chainPkg.Chain, trainerID com.TrainerIdentifier
 	}
 }
 
-func SubmitAggregationAndAggregation(chain chainPkg.Chain, t *testing.T) {
+func SubmitAggregationAndAggregation(chain chain.Chain, t *testing.T) {
 
 	randomTestAddress1 := FillAddress()
 	randomTestAddress2 := FillAddress()
 
 	testCases := []struct {
-		updates  []com.StorageAddress
+		updates  []common.StorageAddress
 		expected int
 	}{
-		{[]com.StorageAddress{
+		{[]common.StorageAddress{
 			randomTestAddress1,
 			randomTestAddress1,
 			randomTestAddress1,
 		}, 0},
-		{[]com.StorageAddress{
+		{[]common.StorageAddress{
 			randomTestAddress1,
 			randomTestAddress1,
 			randomTestAddress2,
 		}, 0},
-		{[]com.StorageAddress{
+		{[]common.StorageAddress{
 			randomTestAddress1,
 			randomTestAddress2,
 			randomTestAddress2,
 		}, 1},
-		{[]com.StorageAddress{
+		{[]common.StorageAddress{
 			randomTestAddress1,
 			randomTestAddress2,
 			randomTestAddress1,
@@ -124,7 +124,7 @@ func SubmitAggregationAndAggregation(chain chainPkg.Chain, t *testing.T) {
 		id, err := chain.DeployModel(
 			testConfigAddress,
 			testWeightsAddress,
-			chainPkg.Hyperparameters{UpdatesTillAggregation: len(testCase.updates)},
+			common.Hyperparameters{UpdatesTillAggregation: len(testCase.updates)},
 		)
 		if err != nil {
 			t.Error(err)
@@ -146,10 +146,14 @@ func SubmitAggregationAndAggregation(chain chainPkg.Chain, t *testing.T) {
 	}
 }
 
-func ModelEpochAndMultipleSuccedingAggregations(chain chainPkg.Chain, t *testing.T) {
+func ModelEpochAndMultipleSuccedingAggregations(chain chain.Chain, t *testing.T) {
 
 	updatesTillAggregation := 3
-	id, err := chain.DeployModel(testConfigAddress, testWeightsAddress, chainPkg.Hyperparameters{UpdatesTillAggregation: updatesTillAggregation})
+	id, err := chain.DeployModel(
+		testConfigAddress,
+		testWeightsAddress,
+		common.Hyperparameters{UpdatesTillAggregation: updatesTillAggregation},
+	)
 	if err != nil {
 		t.Error(err)
 	}

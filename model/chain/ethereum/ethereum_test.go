@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"testing"
 
-	c "github.com/FMorsbach/DecFL/communication"
-	com "github.com/FMorsbach/DecFL/communication"
-	"github.com/FMorsbach/DecFL/communication/chain"
-	"github.com/FMorsbach/DecFL/communication/chain/interface_tests"
+	"github.com/FMorsbach/DecFL/model/chain"
+	"github.com/FMorsbach/DecFL/model/chain/interface_tests"
+	"github.com/FMorsbach/DecFL/model/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
 var ethChain chain.Chain
-var trainerID c.TrainerIdentifier
+var trainerID common.TrainerIdentifier
 
 func init() {
 
@@ -29,7 +28,7 @@ func init() {
 		err = fmt.Errorf("%s%s", "Cannot assert type", err)
 		return
 	}
-	trainerID = com.TrainerIdentifier(crypto.PubkeyToAddress(*publicKeyECDSA))
+	trainerID = common.TrainerIdentifier(crypto.PubkeyToAddress(*publicKeyECDSA))
 
 	ethChain, err = NewEthereum(
 		"http://localhost:8545",

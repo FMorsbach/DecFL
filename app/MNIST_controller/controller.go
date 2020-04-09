@@ -3,16 +3,15 @@ package main
 import (
 	"flag"
 
-	"github.com/FMorsbach/DecFL/communication"
-	"github.com/FMorsbach/DecFL/communication/chain"
-	"github.com/FMorsbach/DecFL/communication/mocks"
-	"github.com/FMorsbach/DecFL/control"
-	"github.com/FMorsbach/DecFL/models/MNIST"
-	"github.com/FMorsbach/DecFL/training/tensorflow"
+	"github.com/FMorsbach/DecFL/app/MNIST"
+	"github.com/FMorsbach/DecFL/model"
+	"github.com/FMorsbach/DecFL/model/common"
+	"github.com/FMorsbach/DecFL/model/mocks"
+	"github.com/FMorsbach/DecFL/model/training/tensorflow"
 	"github.com/FMorsbach/dlog"
 )
 
-var ctl control.Control
+var ctl model.Model
 
 func init() {
 
@@ -26,7 +25,7 @@ func init() {
 
 	trainer := tensorflow.NewTensorflowMLF()
 
-	ctl = control.NewControl(redis, redis, trainer)
+	ctl = model.NewControl(redis, redis, trainer)
 }
 
 func main() {
@@ -38,37 +37,12 @@ func main() {
 	flag.StringVar(&argument, "arg", "", "What argument? model type / model id")
 	flag.Parse()
 
-	switch command {
-	case "deploy":
-
-		config, weights := MNIST.GenerateInitialModel()
-		modelID, err := ctl.Initialize(config, weights, chain.Hyperparameters{UpdatesTillAggregation: 3})
-		if err != nil {
-			dlog.Fatal(err)
-		}
-
-		dlog.Printf("Deployed MNIST model with id %s to redis \n", modelID)
-
-	case "aggregate":
-
-		if argument == "" {
-			dlog.Fatal("You need to specify a model id")
-		}
-
-		err := ctl.Aggregate(communication.ModelIdentifier(argument))
-		if err != nil {
-			dlog.Fatal(err)
-		}
-		dlog.Println("Aggregated model and upated global weights")
-
-		status, err := ctl.Status(communication.ModelIdentifier(argument))
-		if err != nil {
-			dlog.Fatal(err)
-		}
-		dlog.Println(status)
-
-	default:
-		dlog.Fatal("No valid command provided")
+	config, weights := MNIST.GenerateInitialModel()
+	modelID, err := ctl.Initialize(config, weights, common.Hyperparameters{UpdatesTillAggregation: 3})
+	if err != nil {
+		dlog.Fatal(err)
 	}
+
+	dlog.Printf("Deployed MNIST model with id %s to redis \n", modelID)
 
 }

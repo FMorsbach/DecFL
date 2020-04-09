@@ -8,7 +8,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/FMorsbach/DecFL/training"
+	"github.com/FMorsbach/DecFL/model/training"
 	"github.com/FMorsbach/dlog"
 )
 

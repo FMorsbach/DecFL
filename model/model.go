@@ -1,25 +1,25 @@
-package control
+package model
 
 import (
 	"log"
 	"os"
 
-	c "github.com/FMorsbach/DecFL/communication"
-	bc "github.com/FMorsbach/DecFL/communication/chain"
-	"github.com/FMorsbach/DecFL/communication/storage"
-	"github.com/FMorsbach/DecFL/training"
+	"github.com/FMorsbach/DecFL/model/chain"
+	"github.com/FMorsbach/DecFL/model/common"
+	"github.com/FMorsbach/DecFL/model/storage"
+	"github.com/FMorsbach/DecFL/model/training"
 	"github.com/FMorsbach/dlog"
 )
 
-type Control interface {
-	Initialize(configuration string, weights string, params bc.Hyperparameters) (modelID c.ModelIdentifier, err error)
-	Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err error)
-	Aggregate(modelID c.ModelIdentifier) (err error)
-	Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err error)
+type Model interface {
+	Initialize(configuration string, weights string, params common.Hyperparameters) (modelID common.ModelIdentifier, err error)
+	Iterate(modelID common.ModelIdentifier, trainerID common.TrainerIdentifier) (err error)
+	Aggregate(modelID common.ModelIdentifier) (err error)
+	Status(modelID common.ModelIdentifier) (status training.EvaluationResults, err error)
 }
 
 type ctlImpl struct {
-	chain bc.Chain
+	chain chain.Chain
 	store storage.Storage
 	mlf   training.MLFramework
 }
@@ -30,7 +30,7 @@ func EnableDebug(b bool) {
 	logger.SetDebug(b)
 }
 
-func NewControl(ch bc.Chain, st storage.Storage, mlf training.MLFramework) Control {
+func NewControl(ch chain.Chain, st storage.Storage, mlf training.MLFramework) Model {
 	return &ctlImpl{
 		chain: ch,
 		store: st,
@@ -38,7 +38,7 @@ func NewControl(ch bc.Chain, st storage.Storage, mlf training.MLFramework) Contr
 	}
 }
 
-func (ctl *ctlImpl) Initialize(configuration string, weights string, params bc.Hyperparameters) (modelID c.ModelIdentifier, err error) {
+func (ctl *ctlImpl) Initialize(configuration string, weights string, params common.Hyperparameters) (modelID common.ModelIdentifier, err error) {
 
 	logger.Debug("Created initial model")
 
@@ -58,7 +58,7 @@ func (ctl *ctlImpl) Initialize(configuration string, weights string, params bc.H
 	return
 }
 
-func (ctl *ctlImpl) Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdentifier) (err error) {
+func (ctl *ctlImpl) Iterate(modelID common.ModelIdentifier, trainerID common.TrainerIdentifier) (err error) {
 
 	config, weights, err := ctl.globalModel(modelID)
 	if err != nil {
@@ -80,7 +80,7 @@ func (ctl *ctlImpl) Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdenti
 	}
 	logger.Debugf("Wrote local update to storage at %s", updateAddress)
 
-	update := c.Update{
+	update := common.Update{
 		Trainer: trainerID,
 		Address: updateAddress,
 	}
@@ -94,7 +94,7 @@ func (ctl *ctlImpl) Iterate(modelID c.ModelIdentifier, trainerID c.TrainerIdenti
 	return
 }
 
-func (ctl *ctlImpl) Aggregate(modelID c.ModelIdentifier) (err error) {
+func (ctl *ctlImpl) Aggregate(modelID common.ModelIdentifier) (err error) {
 
 	// load the local udpate addresses from the chain
 	localUpdates, err := ctl.chain.LocalUpdates(modelID)
@@ -137,7 +137,7 @@ func (ctl *ctlImpl) Aggregate(modelID c.ModelIdentifier) (err error) {
 	return
 }
 
-func (ctl *ctlImpl) Status(modelID c.ModelIdentifier) (status training.EvaluationResults, err error) {
+func (ctl *ctlImpl) Status(modelID common.ModelIdentifier) (status training.EvaluationResults, err error) {
 
 	config, weights, err := ctl.globalModel(modelID)
 	if err != nil {
@@ -154,7 +154,7 @@ func (ctl *ctlImpl) Status(modelID c.ModelIdentifier) (status training.Evaluatio
 	return
 }
 
-func (ctl *ctlImpl) globalModel(modelID c.ModelIdentifier) (config string, weights string, err error) {
+func (ctl *ctlImpl) globalModel(modelID common.ModelIdentifier) (config string, weights string, err error) {
 	// load the storage addresses from the chain
 	configAddress, err := ctl.chain.ModelConfigurationAddress(modelID)
 	if err != nil {
