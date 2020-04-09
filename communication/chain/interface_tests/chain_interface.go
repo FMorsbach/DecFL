@@ -6,16 +6,16 @@ import (
 	"testing"
 	"time"
 
-	c "github.com/FMorsbach/DecFL/communication"
+	com "github.com/FMorsbach/DecFL/communication"
 	chainPkg "github.com/FMorsbach/DecFL/communication/chain"
 )
 
-var testConfigAddress c.StorageAddress = FillAddress()
-var testWeightsAddress c.StorageAddress = FillAddress()
+var testConfigAddress com.StorageAddress = FillAddress()
+var testWeightsAddress com.StorageAddress = FillAddress()
 
-func FillAddress() c.StorageAddress {
+func FillAddress() com.StorageAddress {
 	rand.Seed(time.Now().UnixNano())
-	return c.StorageAddress(strconv.Itoa(rand.Int()))
+	return com.StorageAddress(strconv.Itoa(rand.Int()))
 }
 
 // TODO: Maybe add tests for wrong modelIds ?
@@ -47,7 +47,7 @@ func DeployModelAndReadModel(chain chainPkg.Chain, t *testing.T) {
 	}
 }
 
-func LocalUpdateSubmission(chain chainPkg.Chain, trainerID c.TrainerIdentifier, t *testing.T) {
+func LocalUpdateSubmission(chain chainPkg.Chain, trainerID com.TrainerIdentifier, t *testing.T) {
 
 	modelID, err := chain.DeployModel(
 		testConfigAddress,
@@ -65,7 +65,7 @@ func LocalUpdateSubmission(chain chainPkg.Chain, trainerID c.TrainerIdentifier, 
 	count := len(updates)
 
 	randomTestAddress1 := FillAddress()
-	update := c.Update{
+	update := com.Update{
 		Trainer: trainerID,
 		Address: randomTestAddress1,
 	}
@@ -92,20 +92,27 @@ func SubmitAggregationAndAggregation(chain chainPkg.Chain, t *testing.T) {
 	randomTestAddress2 := FillAddress()
 
 	testCases := []struct {
-		updates  []c.StorageAddress
+		updates  []com.StorageAddress
 		expected int
 	}{
-		{[]c.StorageAddress{
+		{[]com.StorageAddress{
 			randomTestAddress1,
 			randomTestAddress1,
 			randomTestAddress1,
 		}, 0},
-		{[]c.StorageAddress{
+		{[]com.StorageAddress{
 			randomTestAddress1,
 			randomTestAddress1,
 			randomTestAddress2,
 		}, 0},
-		{[]c.StorageAddress{
+		{[]com.StorageAddress{
+			randomTestAddress1,
+			randomTestAddress2,
+			randomTestAddress2,
+		}, 1},
+		{[]com.StorageAddress{
+			randomTestAddress1,
+			randomTestAddress2,
 			randomTestAddress1,
 			randomTestAddress2,
 			randomTestAddress2,
@@ -139,9 +146,10 @@ func SubmitAggregationAndAggregation(chain chainPkg.Chain, t *testing.T) {
 	}
 }
 
-func ModelEpoch(chain chainPkg.Chain, t *testing.T) {
+func ModelEpochAndMultipleSuccedingAggregations(chain chainPkg.Chain, t *testing.T) {
 
-	id, err := chain.DeployModel(testConfigAddress, testWeightsAddress, chainPkg.Hyperparameters{UpdatesTillAggregation: 3})
+	updatesTillAggregation := 3
+	id, err := chain.DeployModel(testConfigAddress, testWeightsAddress, chainPkg.Hyperparameters{UpdatesTillAggregation: updatesTillAggregation})
 	if err != nil {
 		t.Error(err)
 	}
@@ -154,7 +162,7 @@ func ModelEpoch(chain chainPkg.Chain, t *testing.T) {
 	}
 
 	randomTestAddress1 := FillAddress()
-	for i := 0; i < 3; i++ {
+	for i := 0; i < updatesTillAggregation; i++ {
 
 		err = chain.SubmitAggregation(id, randomTestAddress1)
 		if err != nil {
@@ -167,5 +175,27 @@ func ModelEpoch(chain chainPkg.Chain, t *testing.T) {
 		t.Error(err)
 	} else if epoch != 1 {
 		t.Errorf("Expected epoch to be 1 but got %d", epoch)
+	}
+
+	randomTestAddress2 := FillAddress()
+	for i := 0; i < updatesTillAggregation; i++ {
+
+		err = chain.SubmitAggregation(id, randomTestAddress2)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	epoch, err = chain.ModelEpoch(id)
+	if err != nil {
+		t.Error(err)
+	} else if epoch != 2 {
+		t.Errorf("Expected epoch to be 2 but got %d", epoch)
+	}
+
+	if key, err := chain.GlobalWeightsAddress(id); err != nil {
+		t.Error(err)
+	} else if key != randomTestAddress2 {
+		t.Errorf("Expected %s as GlobalWeightsAddress but got %s", randomTestAddress2, key)
 	}
 }

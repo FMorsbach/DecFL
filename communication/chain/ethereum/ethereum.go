@@ -78,7 +78,13 @@ func (c *ethereumChain) DeployModel(configAddress com.StorageAddress, weightsAdd
 	auth.GasLimit = uint64(3000000) // in units
 	auth.GasPrice = gasPrice
 
-	address, tx, _, err := contract.DeployContract(auth, &(c.client), string(configAddress), string(weightsAddress))
+	address, tx, _, err := contract.DeployContract(
+		auth,
+		&(c.client),
+		string(configAddress),
+		string(weightsAddress),
+		big.NewInt(int64(params.UpdatesTillAggregation)),
+	)
 	if err != nil {
 		return
 	}
@@ -214,10 +220,18 @@ func (c *ethereumChain) LocalUpdates(id com.ModelIdentifier) (updates []com.Upda
 	return
 }
 
-func (c *ethereumChain) ClearLocalUpdateAddresses(id com.ModelIdentifier) (err error) {
-	return
-}
-
 func (c *ethereumChain) ModelEpoch(id com.ModelIdentifier) (epoch int, err error) {
+
+	instance, err := contract.NewContract(common.HexToAddress(string(id)), &(c.client))
+	if err != nil {
+		return
+	}
+
+	value, err := instance.Epoch(nil)
+	if err != nil {
+		return
+	}
+
+	epoch = int(value.Int64())
 	return
 }

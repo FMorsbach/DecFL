@@ -115,5 +115,5 @@ func TestSubmitAggregationAndAggregation(t *testing.T) {
 }
 
 func TestModelEpoch(t *testing.T) {
-	interface_tests.ModelEpoch(redis1, t)
+	interface_tests.ModelEpochAndMultipleSuccedingAggregations(redis1, t)
 }

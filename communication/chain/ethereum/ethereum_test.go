@@ -55,5 +55,5 @@ func TestSubmitAggregationAndAggregation(t *testing.T) {
 }
 
 func TestModelEpoch(t *testing.T) {
-	interface_tests.ModelEpoch(ethChain, t)
+	interface_tests.ModelEpochAndMultipleSuccedingAggregations(ethChain, t)
 }
