@@ -114,9 +114,9 @@ func (r *Redis) SubmitAggregation(id common.ModelIdentifier, address common.Stor
 	return
 }
 
-func (r *Redis) SubmitLocalUpdate(modelID common.ModelIdentifier, update common.Update) (err error) {
+func (r *Redis) SubmitLocalUpdate(modelID common.ModelIdentifier, updateAddress common.StorageAddress) (err error) {
 
-	data, err := json.Marshal(update)
+	data, err := json.Marshal(updateAddress)
 	if err != nil {
 		return
 	}
@@ -124,7 +124,7 @@ func (r *Redis) SubmitLocalUpdate(modelID common.ModelIdentifier, update common.
 	if err != nil {
 		return
 	}
-	logger.Debugf("Appended %s to %s", update.Address, key(modelID, LOCAL_UPDATES_KEY))
+	logger.Debugf("Appended %s to %s", updateAddress, key(modelID, LOCAL_UPDATES_KEY))
 
 	return
 }
@@ -138,12 +138,16 @@ func (r *Redis) LocalUpdates(id common.ModelIdentifier) (addresses []common.Upda
 
 	addresses = make([]common.Update, len(temp))
 	for i, t := range temp {
-		var data common.Update
+		var data common.StorageAddress
 		err = json.Unmarshal([]byte(t), &data)
 		if err != nil {
 			return
 		}
-		addresses[i] = data
+		var trainer common.TrainerIdentifier
+		addresses[i] = common.Update{
+			Trainer: trainer,
+			Address: data,
+		}
 	}
 
 	return
@@ -225,4 +229,9 @@ func (r *Redis) Load(address common.StorageAddress) (content string, err error) 
 	}
 
 	return
+}
+
+func (r *Redis) AggregationReady(id common.ModelIdentifier) (ready bool, err error) {
+	logger.Panic("not yet implemented")
+	return false, nil
 }

@@ -7,7 +7,8 @@ type Chain interface {
 	ModelEpoch(id common.ModelIdentifier) (epoch int, err error)
 	ModelConfigurationAddress(id common.ModelIdentifier) (address common.StorageAddress, err error)
 	GlobalWeightsAddress(id common.ModelIdentifier) (address common.StorageAddress, err error)
-	SubmitLocalUpdate(modelID common.ModelIdentifier, update common.Update) (err error)
+	SubmitLocalUpdate(modelID common.ModelIdentifier, updateAddress common.StorageAddress) (err error)
 	LocalUpdates(id common.ModelIdentifier) (updates []common.Update, err error)
 	SubmitAggregation(id common.ModelIdentifier, address common.StorageAddress) (err error)
+	AggregationReady(id common.ModelIdentifier) (ready bool, err error)
 }

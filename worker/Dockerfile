@@ -18,6 +18,4 @@ COPY worker /app/worker
 #TODO remove
 COPY scripts /app/scripts
 
-ENTRYPOINT ./worker -model=$MODEL -trainer=$TRAINER -redis=$REDIS
-
-
+ENTRYPOINT ./worker -c $CHAIN -s $STORAGE -k $KEY -m $MODEL

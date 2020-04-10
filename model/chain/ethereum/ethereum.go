@@ -160,7 +160,7 @@ func (c *ethereumChain) SubmitAggregation(id common.ModelIdentifier, address com
 	return
 }
 
-func (c *ethereumChain) SubmitLocalUpdate(id common.ModelIdentifier, update common.Update) (err error) {
+func (c *ethereumChain) SubmitLocalUpdate(id common.ModelIdentifier, updateAddress common.StorageAddress) (err error) {
 
 	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
 	if err != nil {
@@ -184,7 +184,7 @@ func (c *ethereumChain) SubmitLocalUpdate(id common.ModelIdentifier, update comm
 	auth.GasLimit = uint64(3000000) // in units
 	auth.GasPrice = gasPrice
 
-	tx, err := instance.SubmitLocalUpdate(auth, string(update.Address))
+	tx, err := instance.SubmitLocalUpdate(auth, string(updateAddress))
 	if err != nil {
 		return
 	}
@@ -233,5 +233,17 @@ func (c *ethereumChain) ModelEpoch(id common.ModelIdentifier) (epoch int, err er
 	}
 
 	epoch = int(value.Int64())
+	return
+}
+
+func (c *ethereumChain) AggregationReady(id common.ModelIdentifier) (ready bool, err error) {
+
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
+	if err != nil {
+		return
+	}
+
+	ready, err = instance.AggregationReady(nil)
+
 	return
 }

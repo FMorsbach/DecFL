@@ -65,12 +65,8 @@ func LocalUpdateSubmission(chain chain.Chain, trainerID common.TrainerIdentifier
 	count := len(updates)
 
 	randomTestAddress1 := FillAddress()
-	update := common.Update{
-		Trainer: trainerID,
-		Address: randomTestAddress1,
-	}
 
-	err = chain.SubmitLocalUpdate(modelID, update)
+	err = chain.SubmitLocalUpdate(modelID, randomTestAddress1)
 	if err != nil {
 		t.Error(err)
 	}
@@ -201,5 +197,80 @@ func ModelEpochAndMultipleSuccedingAggregations(chain chain.Chain, t *testing.T)
 		t.Error(err)
 	} else if key != randomTestAddress2 {
 		t.Errorf("Expected %s as GlobalWeightsAddress but got %s", randomTestAddress2, key)
+	}
+}
+
+func AggregationReady(chain chain.Chain, t *testing.T) {
+
+	randomTestAddress1 := FillAddress()
+
+	testCases := []struct {
+		updates []common.StorageAddress
+	}{
+		{[]common.StorageAddress{
+			randomTestAddress1,
+		}},
+		{[]common.StorageAddress{
+			randomTestAddress1,
+			randomTestAddress1,
+			randomTestAddress1,
+		}},
+		{[]common.StorageAddress{
+			randomTestAddress1,
+			randomTestAddress1,
+			randomTestAddress1,
+			randomTestAddress1,
+			randomTestAddress1,
+		}},
+	}
+
+	for i, testCase := range testCases {
+
+		id, err := chain.DeployModel(
+			testConfigAddress,
+			testWeightsAddress,
+			common.Hyperparameters{UpdatesTillAggregation: len(testCase.updates)},
+		)
+		if err != nil {
+			t.Error(err)
+		}
+
+		for j, update := range testCase.updates {
+
+			ready, err := chain.AggregationReady(id)
+			if err != nil {
+				t.Error(err)
+			} else if ready {
+				t.Errorf("Case: %d Was ready after %d updates instead of %d", i, j, len(testCase.updates))
+			}
+
+			err = chain.SubmitLocalUpdate(id, update)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+
+		for j, update := range testCase.updates {
+
+			ready, err := chain.AggregationReady(id)
+			if err != nil {
+				t.Error(err)
+			} else if !ready {
+				t.Errorf("Case: %d Was not ready after %d updates and %d aggregations", i, len(testCase.updates), j)
+			}
+
+			err = chain.SubmitAggregation(id, update)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+
+		ready, err := chain.AggregationReady(id)
+		if err != nil {
+			t.Error(err)
+		} else if ready {
+			t.Errorf("Case: %d Did not reset after %d aggregations", i, len(testCase.updates))
+		}
+
 	}
 }

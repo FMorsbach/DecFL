@@ -11,6 +11,7 @@ contract Model {
     string private currentCandidate;
     uint private submittedVotes;
     string[] private votedAddresses;
+    bool public aggregationReady;
 
     struct Submission {
         address trainer;
@@ -24,10 +25,14 @@ contract Model {
         weightsAddress = _weightsAddress;
         updatesTillAggregation = _updatesTillAggregation;
         epoch = 0;
+        aggregationReady = false;
     }
 
     function submitLocalUpdate(string memory updateAddress) public {
         localUpdates.push(Submission(msg.sender, updateAddress));
+        if (localUpdates.length >= updatesTillAggregation) {
+            aggregationReady = true;
+        }
     }
 
     function LocalUpdatesCount() public view returns (uint) {
@@ -48,6 +53,7 @@ contract Model {
             weightsAddress = currentCandidate;
             epoch = epoch + 1;
             submittedVotes = 0;
+            aggregationReady = false;
             while(votedAddresses.length > 0) {
                 aggregationVotes[votedAddresses[votedAddresses.length-1]] = 0;
                 votedAddresses.pop();

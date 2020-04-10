@@ -1,7 +1,6 @@
 *.idea
-training/tensorflow/venv
-training/tensorflow/res/.in
-training/tensorflow/res/.out
 *__pycache__*
 go.sum
-app/MNIST_TF/MNIST_TF
+
+worker/scripts
+model/training/tensorflow/res/*.in

@@ -5,20 +5,23 @@ services:
     image: "worker:v1"
     environment:  
       - MODEL=${MODEL}
-      - TRAINER=1
-      - REDIS=redis1:6379
+      - KEY=3b3a098805d048bab52b82b8767da2117af104cc97ec820acbe1b63e768ebba7
+      - STORAGE=redis1:6379
+      - CHAIN=http://chain1:8545
   worker2:
     image: "worker:v1"
     environment:  
       - MODEL=${MODEL}
-      - TRAINER=2
-      - REDIS=redis1:6379
+      - KEY=ea7e514344e7495c942cf559cbff1954abbac43f45df04608ded63ab5af82f5c
+      - STORAGE=redis1:6379
+      - CHAIN=http://chain1:8545
   worker3:
     image: "worker:v1"
     environment:  
       - MODEL=${MODEL}
-      - TRAINER=3
-      - REDIS=redis1:6379
+      - KEY=33ccaeefaf226616a3d9ca51188bef85e0d5a6ab3276fbe94226bc5cdd67980d
+      - STORAGE=redis1:6379
+      - CHAIN=http://chain1:8545
 
 
 networks:

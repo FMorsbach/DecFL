@@ -69,12 +69,7 @@ func TestClearLocalUpdateAddresses(t *testing.T) {
 		t.Error(err)
 	}
 
-	update := common.Update{
-		Trainer: trainerID,
-		Address: testAddress2,
-	}
-
-	err = redis1.SubmitLocalUpdate(modelID, update)
+	err = redis1.SubmitLocalUpdate(modelID, testAddress2)
 	if err != nil {
 		t.Error(err)
 	}

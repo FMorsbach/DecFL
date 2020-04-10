@@ -56,3 +56,7 @@ func TestSubmitAggregationAndAggregation(t *testing.T) {
 func TestModelEpoch(t *testing.T) {
 	interface_tests.ModelEpochAndMultipleSuccedingAggregations(ethChain, t)
 }
+
+func TestAggregationReady(t *testing.T) {
+	interface_tests.AggregationReady(ethChain, t)
+}
