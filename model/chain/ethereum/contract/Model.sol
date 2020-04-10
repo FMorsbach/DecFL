@@ -50,13 +50,19 @@ contract Model {
         }
 
         if (submittedVotes >= updatesTillAggregation) {
+
             weightsAddress = currentCandidate;
             epoch = epoch + 1;
             submittedVotes = 0;
             aggregationReady = false;
+
             while(votedAddresses.length > 0) {
                 aggregationVotes[votedAddresses[votedAddresses.length-1]] = 0;
                 votedAddresses.pop();
+            }
+
+            while(localUpdates.length > 0){
+                localUpdates.pop();
             }
         }
     }

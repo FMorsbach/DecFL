@@ -274,3 +274,50 @@ func AggregationReady(chain chain.Chain, t *testing.T) {
 
 	}
 }
+
+func ResetLocalUpdatesAfterAggregation(chain chain.Chain, t *testing.T) {
+
+	updatesTillAggregation := 2
+	modelID, err := chain.DeployModel(
+		testConfigAddress,
+		testWeightsAddress,
+		common.Hyperparameters{UpdatesTillAggregation: updatesTillAggregation})
+	if err != nil {
+		t.Error(err)
+	}
+
+	randomTestAddress1 := FillAddress()
+	for i := 0; i < updatesTillAggregation; i++ {
+
+		err = chain.SubmitLocalUpdate(modelID, randomTestAddress1)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	updates, err := chain.LocalUpdates(modelID)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(updates) != updatesTillAggregation {
+		t.Errorf("Expected %d stored updates but got %d", updatesTillAggregation, len(updates))
+	}
+
+	for i := 0; i < updatesTillAggregation; i++ {
+
+		err = chain.SubmitAggregation(modelID, randomTestAddress1)
+		if err != nil {
+			t.Error(err)
+		}
+	}
+
+	updates, err = chain.LocalUpdates(modelID)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(updates) != 0 {
+		t.Errorf("Expected 0 stored updates but got %d", len(updates))
+	}
+}

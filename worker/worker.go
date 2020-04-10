@@ -90,7 +90,7 @@ func init() {
 	}
 
 	//dlog.Printf("Working on model %s as node %s connected to %s\n", modelID, nodeID, chainConnection)
-	//md.EnableDebug(true)
+	md.EnableDebug(false)
 }
 
 func main() {
@@ -104,6 +104,5 @@ func main() {
 		model.WaitForAggregation()
 
 		model.Aggregate()
-
 	}
 }

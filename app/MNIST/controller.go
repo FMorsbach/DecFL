@@ -40,7 +40,7 @@ func main() {
 		weights,
 		st,
 		ch,
-		common.Hyperparameters{UpdatesTillAggregation: 1},
+		common.Hyperparameters{UpdatesTillAggregation: 3},
 	)
 	if err != nil {
 		dlog.Fatal(err)

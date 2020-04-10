@@ -60,3 +60,7 @@ func TestModelEpoch(t *testing.T) {
 func TestAggregationReady(t *testing.T) {
 	interface_tests.AggregationReady(ethChain, t)
 }
+
+func TestResetLocalUpdatesAfterAggregation(t *testing.T) {
+	interface_tests.ResetLocalUpdatesAfterAggregation(ethChain, t)
+}
