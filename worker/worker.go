@@ -53,7 +53,7 @@ func init() {
 		}
 
 	case "redis":
-		redis := mocks.NewRedis(chainConnection)
+		redis := mocks.NewRedis(chainConnection, "")
 		if ok, err := redis.IsReachable(); !ok {
 			dlog.Fatal("Cant reach redis: ", err)
 		}
@@ -67,7 +67,7 @@ func init() {
 	var store st.Storage
 	switch storageType {
 	case "redis":
-		redis := mocks.NewRedis(storageConnection)
+		redis := mocks.NewRedis(storageConnection, "")
 		if ok, err := redis.IsReachable(); !ok {
 			dlog.Fatal("Cant reach redis: ", err)
 		}

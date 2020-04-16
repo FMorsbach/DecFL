@@ -32,11 +32,11 @@ type Redis struct {
 	client *redis.Client
 }
 
-func NewRedis(connection string) (instance *Redis) {
+func NewRedis(connection string, password string) (instance *Redis) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     connection,
-		Password: "",
+		Password: password,
 		DB:       0,
 	})
 

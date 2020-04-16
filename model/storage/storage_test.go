@@ -21,7 +21,7 @@ var testObjects []Storage
 
 func init() {
 	testObjects = []Storage{
-		mocks.NewRedis("localhost:6379"),
+		mocks.NewRedis("localhost:6379", ""),
 	}
 }
 

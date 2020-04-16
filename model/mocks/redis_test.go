@@ -27,9 +27,9 @@ func FillAddress() common.StorageAddress {
 
 func init() {
 
-	redis1 = NewRedis(connection)
+	redis1 = NewRedis(connection, "")
 
-	if ok, err := NewRedis(connection).IsReachable(); !ok {
+	if ok, err := redis1.IsReachable(); !ok {
 		dlog.Fatal("Cant reach redis: ", err)
 	}
 }
