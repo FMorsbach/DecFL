@@ -18,4 +18,4 @@ COPY worker /app/worker
 #TODO remove
 COPY scripts /app/scripts
 
-ENTRYPOINT ./worker -c $CHAIN -s $STORAGE -k $KEY -m $MODEL
+ENTRYPOINT ./worker -c $CHAIN -s $STORAGE -k $KEY -m $MODEL -redisPW $RPW

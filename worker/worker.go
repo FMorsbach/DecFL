@@ -23,6 +23,7 @@ func init() {
 	var storageConnection string
 	var privateKey string
 	var modelAddress string
+	var redisPassword string
 
 	flag.StringVar(&chainType, "chainType", "ethereum", "Wheter to choose ethereum or redis as chain")
 	flag.StringVar(&storageType, "storageType", "redis", "Wheter to choose IPFS or redis as storage")
@@ -30,6 +31,7 @@ func init() {
 	flag.StringVar(&storageConnection, "s", "", "The connection identifier to the storage service")
 	flag.StringVar(&privateKey, "k", "", "the private key for the chain")
 	flag.StringVar(&modelAddress, "m", "", "The address of the model")
+	flag.StringVar(&redisPassword, "redisPW", "", "(Optional) The password for redis if used")
 
 	required := []string{"c", "s", "k", "m"}
 	flag.Parse()
@@ -53,7 +55,7 @@ func init() {
 		}
 
 	case "redis":
-		redis := mocks.NewRedis(chainConnection, "")
+		redis := mocks.NewRedis(chainConnection, redisPassword)
 		if ok, err := redis.IsReachable(); !ok {
 			dlog.Fatal("Cant reach redis: ", err)
 		}
@@ -67,7 +69,7 @@ func init() {
 	var store st.Storage
 	switch storageType {
 	case "redis":
-		redis := mocks.NewRedis(storageConnection, "")
+		redis := mocks.NewRedis(storageConnection, redisPassword)
 		if ok, err := redis.IsReachable(); !ok {
 			dlog.Fatal("Cant reach redis: ", err)
 		}

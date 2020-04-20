@@ -24,7 +24,7 @@ func main() {
 	config, weights := GenerateInitialModel()
 
 	var st storage.Storage
-	redis := mocks.NewRedis("localhost:6379", "")
+	redis := mocks.NewRedis("localhost:6379", "KNMbFwymMYz4u9UJWpxpvqK")
 	if ok, err := redis.IsReachable(); !ok {
 		dlog.Fatal(err)
 	}
