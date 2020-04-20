@@ -9,12 +9,6 @@ import (
 	"github.com/go-redis/redis"
 )
 
-const MODEL_CONFIG_KEY string = "globalModelConfiguration"
-const MODEL_WEIGHTS_KEY string = "globalModelWeights"
-const ITERATIONS_KEY string = "iteration"
-const LOCAL_UPDATES_KEY string = "localUpdates"
-const MODEL_EPOCH_KEY string = "epoch"
-
 type Redis struct {
 	client *redis.Client
 }

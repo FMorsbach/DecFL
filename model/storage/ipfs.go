@@ -28,6 +28,8 @@ func (ip *IPFS) Store(content string) (address common.StorageAddress, err error)
 		return
 	}
 
+	ip.sh.IsUp()
+
 	address = common.StorageAddress(cid)
 
 	return
@@ -47,4 +49,8 @@ func (ip *IPFS) Load(address common.StorageAddress) (content string, err error) 
 
 	content = string(buffer)
 	return
+}
+
+func (ip *IPFS) IsReachable() bool {
+	return ip.sh.IsUp()
 }

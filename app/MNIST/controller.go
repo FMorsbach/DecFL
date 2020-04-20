@@ -6,10 +6,7 @@ import (
 	"log"
 
 	"github.com/FMorsbach/DecFL/model"
-	"github.com/FMorsbach/DecFL/model/chain/ethereum"
 	"github.com/FMorsbach/DecFL/model/common"
-	"github.com/FMorsbach/DecFL/model/mocks"
-	"github.com/FMorsbach/DecFL/model/storage"
 	"github.com/FMorsbach/dlog"
 )
 
@@ -21,16 +18,9 @@ func init() {
 
 func main() {
 
-	config, weights := GenerateInitialModel()
+	config, weights := generateInitialModel()
 
-	var st storage.Storage
-	redis := mocks.NewRedis("localhost:6379", "KNMbFwymMYz4u9UJWpxpvqK")
-	if ok, err := redis.IsReachable(); !ok {
-		dlog.Fatal(err)
-	}
-	st = redis
-
-	ch, err := ethereum.NewEthereum("http://localhost:8545", "3b3a098805d048bab52b82b8767da2117af104cc97ec820acbe1b63e768ebba7")
+	chain, store, _, err := model.ParseCLIConfig()
 	if err != nil {
 		dlog.Fatal(err)
 	}
@@ -38,8 +28,8 @@ func main() {
 	modelID, err := model.Deploy(
 		config,
 		weights,
-		st,
-		ch,
+		store,
+		chain,
 		common.Hyperparameters{UpdatesTillAggregation: 3},
 	)
 	if err != nil {
@@ -49,7 +39,7 @@ func main() {
 	fmt.Println(string(modelID))
 }
 
-func GenerateInitialModel() (configuration string, weights string) {
+func generateInitialModel() (configuration string, weights string) {
 
 	configuration = loadDataFromDisk("configuration.txt")
 	weights = loadDataFromDisk("weights.txt")
