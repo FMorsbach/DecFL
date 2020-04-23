@@ -1,6 +1,8 @@
 *.idea
 *__pycache__*
 go.sum
+*retry
 
 worker/scripts
+worker/worker
 model/training/tensorflow/res/*.in

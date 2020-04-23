@@ -13,9 +13,9 @@ ENV DECFL_SCRIPTS /app/scripts
 RUN mkdir res
 ENV DECFL_RES /app/res
 
-COPY worker /app/worker
-
 #TODO remove
 COPY scripts /app/scripts
 
-ENTRYPOINT ./worker -c $CHAIN -s $STORAGE -k $KEY -m $MODEL -storageType $STORAGE_TYPE
+COPY worker /app/worker
+
+ENTRYPOINT ./worker -redisPW $RPW -c $CHAIN -s $STORAGE -k $KEY -m $MODEL -storageType $STORAGE_TYPE

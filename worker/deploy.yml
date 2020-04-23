@@ -1,0 +1,28 @@
+---
+- hosts: snic
+  tasks:
+    - name: Create a directory if it does not exist
+      file:
+        path: /home/ubuntu/app
+        state: directory
+        mode: '0755'
+    - name: copy worker binary
+      copy: 
+        src: worker
+        dest: ~/app/worker
+        mode: '0755'
+    - name: copy scripts
+      copy: 
+        src: scripts/
+        dest: ~/app/scripts/
+    - name: copy Dockerfile
+      copy:
+        src: Dockerfile
+        dest: ~/app/Dockerfile
+    - name: build docker image
+      docker_image:
+        name: worker
+        path: /home/ubuntu/app
+        state: present
+        force: yes
+      become: yes

@@ -26,7 +26,7 @@ func ParseCLIConfig() (chain ch.Chain, store st.Storage, modelID common.ModelIde
 	flag.StringVar(&redisPassword, "redisPW", "", "(Optional) The password for redis if used")
 	flag.StringVar(&modelAddress, "m", "", "The address of the model")
 
-	required := []string{"c", "s", "k"}
+	required := []string{"c", "s", "k", "storageType"}
 	flag.Parse()
 
 	seen := make(map[string]bool)
