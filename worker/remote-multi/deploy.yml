@@ -8,16 +8,16 @@
         mode: '0755'
     - name: copy worker binary
       copy: 
-        src: worker
+        src: ../worker
         dest: ~/app/worker
         mode: '0755'
     - name: copy scripts
       copy: 
-        src: scripts/
+        src: ../scripts/
         dest: ~/app/scripts/
     - name: copy Dockerfile
       copy:
-        src: Dockerfile
+        src: ../Dockerfile
         dest: ~/app/Dockerfile
     - name: build docker image
       docker_image:

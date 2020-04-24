@@ -9,9 +9,10 @@
         state: started
         env:
             MODEL: "{{ model }}"
-            STORAGE: 129.16.123.66:6379
+            STORAGE: ipfs:5001
             CHAIN: http://129.16.123.66:8545
-            RPW: KNMbFwymMYz4u9UJWpxpvqK
-            STORAGE_TYPE: redis
+            STORAGE_TYPE: ipfs
         env_file: /home/ubuntu/app/config
+        networks:
+          - name: decfl_net
       become: yes

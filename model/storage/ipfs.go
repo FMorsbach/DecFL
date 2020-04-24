@@ -27,8 +27,13 @@ func (ip *IPFS) Store(content string) (address common.StorageAddress, err error)
 	if err != nil {
 		return
 	}
+	logger.Debugf("Wrote to address %s", cid)
 
-	ip.sh.IsUp()
+	err = ip.sh.Pin(cid)
+	if err != nil {
+		return
+	}
+	logger.Debugf("Pinned address %s", cid)
 
 	address = common.StorageAddress(cid)
 
@@ -41,6 +46,13 @@ func (ip *IPFS) Load(address common.StorageAddress) (content string, err error) 
 	if err != nil {
 		return
 	}
+	logger.Debugf("Loaded address %s", address)
+
+	ip.sh.Pin(string(address))
+	if err != nil {
+		return
+	}
+	logger.Debugf("Pinned address %s", address)
 
 	buffer, err := ioutil.ReadAll(reader)
 	if err != nil {

@@ -43,16 +43,19 @@ func NewControl(ch chain.Chain, st storage.Storage, mlf training.MLFramework, mo
 	if err != nil {
 		return nil, err
 	}
+	logger.Debugf("Retrieved model epoch %d", localEpoch)
 
 	modelAddress, err := ch.ModelConfigurationAddress(modelID)
 	if err != nil {
 		return nil, err
 	}
+	logger.Debugf("Retrieved model config address %s", string(modelAddress))
 
 	config, err := st.Load(modelAddress)
 	if err != nil {
 		return nil, err
 	}
+	logger.Debugf("Loaded model config from storage")
 
 	return &ctlImpl{
 		chain:       ch,

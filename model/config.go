@@ -42,6 +42,7 @@ func ParseCLIConfig() (chain ch.Chain, store st.Storage, modelID common.ModelIde
 	if err != nil {
 		return
 	}
+	logger.Debug("Connected and reached the chain")
 
 	// setup storage
 	switch storageType {
@@ -52,6 +53,7 @@ func ParseCLIConfig() (chain ch.Chain, store st.Storage, modelID common.ModelIde
 			err = fmt.Errorf("Cant reach redis: %s", err)
 			return
 		}
+		logger.Debug("Connected and reached redis")
 		store = redis
 
 	case "ipfs":
@@ -60,6 +62,7 @@ func ParseCLIConfig() (chain ch.Chain, store st.Storage, modelID common.ModelIde
 			err = fmt.Errorf("Cant reach ipfs node")
 			return
 		}
+		logger.Debug("Connected and reached IPFS")
 		store = ipfs
 
 	default:
