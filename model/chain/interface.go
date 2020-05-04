@@ -4,6 +4,7 @@ import "github.com/FMorsbach/DecFL/model/common"
 
 type Chain interface {
 	DeployModel(configAddress common.StorageAddress, weightsAddress common.StorageAddress, params common.Hyperparameters) (id common.ModelIdentifier, err error)
+	AddTrainer(id common.ModelIdentifier, trainer common.TrainerIdentifier) (err error)
 	ModelEpoch(id common.ModelIdentifier) (epoch int, err error)
 	ModelConfigurationAddress(id common.ModelIdentifier) (address common.StorageAddress, err error)
 	GlobalWeightsAddress(id common.ModelIdentifier) (address common.StorageAddress, err error)

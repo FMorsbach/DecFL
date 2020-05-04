@@ -23,6 +23,13 @@ contract Model {
     }
 
     Submission[] public localUpdates;
+    mapping(address => bool) private trainers;
+
+    modifier isTrainer()
+    {
+        require(trainers[msg.sender], "Not an authorized trainer");
+        _;
+    }
 
     constructor(
         string memory _configurationAddress,
@@ -36,9 +43,21 @@ contract Model {
         current_epoch = 0;
         target_epoch = _target_epoch;
         state = states.training;
+        trainers[msg.sender] = true;
     }
 
-    function submitLocalUpdate(string memory updateAddress) public returns (bool) {
+    function addTrainer(address trainer)
+    public
+    isTrainer()
+    {
+        trainers[trainer] = true;
+    }
+
+    function submitLocalUpdate(string memory updateAddress)
+    public
+    isTrainer()
+    returns (bool)
+    {
 
         if (state != states.training) return false;
 
@@ -50,11 +69,18 @@ contract Model {
     }
 
     // Needed to retrieve all local updates programmatically
-    function LocalUpdatesCount() public view returns (uint) {
+    function LocalUpdatesCount()
+    public
+    view
+    returns (uint) {
         return localUpdates.length;
     }
 
-    function submitLocalAggregation(string memory updateAddress) public returns (bool) {
+    function submitLocalAggregation(string memory updateAddress)
+    public
+    isTrainer()
+    returns (bool)
+    {
 
         if (state != states.aggregation) return false;
 

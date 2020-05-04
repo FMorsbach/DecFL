@@ -12,6 +12,7 @@ import (
 )
 
 var ethChain chain.Chain
+var ethChain2 chain.Chain
 var trainerID common.TrainerIdentifier
 
 func init() {
@@ -33,6 +34,11 @@ func init() {
 	ethChain, err = NewEthereum(
 		"http://localhost:8545",
 		key,
+	)
+
+	ethChain2, err = NewEthereum(
+		"http://localhost:8545",
+		"ea7e514344e7495c942cf559cbff1954abbac43f45df04608ded63ab5af82f5c",
 	)
 
 	if err != nil {
@@ -63,4 +69,8 @@ func TestStateTransitions(t *testing.T) {
 
 func TestResetLocalUpdatesAfterAggregation(t *testing.T) {
 	interface_tests.ResetLocalUpdatesAfterAggregation(ethChain, t)
+}
+
+func TestAuthorization(t *testing.T) {
+	interface_tests.Authorization(ethChain2, ethChain, trainerID, t)
 }

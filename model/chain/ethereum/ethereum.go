@@ -248,3 +248,36 @@ func (c *ethereumChain) State(id common.ModelIdentifier) (state uint8, err error
 
 	return
 }
+
+func (c *ethereumChain) AddTrainer(id common.ModelIdentifier, trainer common.TrainerIdentifier) (err error) {
+
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
+	if err != nil {
+		return
+	}
+
+	nonce, err := c.client.PendingNonceAt(context.Background(), c.publicAddress)
+	if err != nil {
+		return
+
+	}
+
+	gasPrice, err := c.client.SuggestGasPrice(context.Background())
+	if err != nil {
+		return
+	}
+
+	auth := bind.NewKeyedTransactor(&(c.privateKey))
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = big.NewInt(0)      // in wei
+	auth.GasLimit = uint64(3000000) // in units
+	auth.GasPrice = gasPrice
+
+	tx, err := instance.AddTrainer(auth, ethCommon.Address(trainer))
+	if err != nil {
+		return
+	}
+
+	logger.Debugf("Wrote local update to chain as tx: %s", tx.Hash().Hex())
+	return
+}

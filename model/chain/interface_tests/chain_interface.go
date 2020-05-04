@@ -390,3 +390,68 @@ func ResetLocalUpdatesAfterAggregation(chain ch.Chain, t *testing.T) {
 		t.Errorf("Expected 0 stored updates but got %d", len(updates))
 	}
 }
+
+func Authorization(chain1 ch.Chain, chain2 ch.Chain, trainerID2 common.TrainerIdentifier, t *testing.T) {
+
+	testCases := []struct {
+		client    ch.Chain
+		tID       common.TrainerIdentifier
+		accepted  bool
+		addClient bool
+	}{
+		{chain1, common.TrainerIdentifier{}, true, false},
+		{chain2, trainerID2, false, false},
+		{chain2, trainerID2, true, true},
+	}
+
+	for i, test := range testCases {
+
+		id, err := chain1.DeployModel(
+			testConfigAddress,
+			testWeightsAddress,
+			common.Hyperparameters{
+				UpdatesTillAggregation: 2,
+				Epochs:                 2,
+			},
+		)
+		if err != nil {
+			t.Error(err)
+		}
+
+		before, err := chain1.LocalUpdates(id)
+		if err != nil {
+			t.Error(err)
+		}
+		if len(before) != 0 {
+			t.Errorf("Case %d: Expected 0 updates but got %d", i, len(before))
+		}
+
+		if test.addClient {
+			err := chain1.AddTrainer(id, test.tID)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+
+		err = test.client.SubmitLocalUpdate(id, testWeightsAddress)
+		if !test.accepted && err.Error() == "VM Exception while processing transaction: revert Not an authorized trainer" {
+
+		} else if err != nil {
+			t.Errorf("Case %d: %s", i, err)
+		}
+
+		after, err := chain1.LocalUpdates(id)
+		if err != nil {
+			t.Error(err)
+		}
+		if test.accepted {
+			if len(after) != len(before)+1 {
+				t.Errorf("Case %d: Expected %d updates but got %d", i, len(before)+1, len(after))
+			}
+		} else {
+			if len(after) != len(before) {
+				t.Errorf("Case %d: Expected %d updates but got %d", i, len(before), len(after))
+			}
+		}
+	}
+}
