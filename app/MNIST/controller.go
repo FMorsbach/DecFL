@@ -30,7 +30,10 @@ func main() {
 		weights,
 		store,
 		chain,
-		common.Hyperparameters{UpdatesTillAggregation: 3},
+		common.Hyperparameters{
+			UpdatesTillAggregation: 3,
+			Epochs:                 3,
+		},
 	)
 	if err != nil {
 		dlog.Fatal(err)

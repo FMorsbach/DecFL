@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"log"
 	"os"
-	"time"
 
 	"github.com/FMorsbach/DecFL/model/chain"
 	"github.com/FMorsbach/DecFL/model/common"
@@ -17,12 +16,12 @@ import (
 type Model interface {
 	Iterate() (err error)
 	Aggregate() (err error)
-	Status() (status training.EvaluationResults, err error)
-	WaitForNewEpoch() (err error)
-	WaitForAggregation() (err error)
+	Evaluate() (evaluation training.EvaluationResults, err error)
+	Epoch() (epoch int, err error)
+	State() (state uint8, err error)
 }
 
-type ctlImpl struct {
+type modelImpl struct {
 	chain       chain.Chain
 	store       storage.Storage
 	mlf         training.MLFramework
@@ -37,7 +36,7 @@ func EnableDebug(b bool) {
 	logger.SetDebug(b)
 }
 
-func NewControl(ch chain.Chain, st storage.Storage, mlf training.MLFramework, modelID common.ModelIdentifier) (Model, error) {
+func NewModel(ch chain.Chain, st storage.Storage, mlf training.MLFramework, modelID common.ModelIdentifier) (Model, error) {
 
 	localEpoch, err := ch.ModelEpoch(modelID)
 	if err != nil {
@@ -57,7 +56,7 @@ func NewControl(ch chain.Chain, st storage.Storage, mlf training.MLFramework, mo
 	}
 	logger.Debugf("Loaded model config from storage")
 
-	return &ctlImpl{
+	return &modelImpl{
 		chain:       ch,
 		store:       st,
 		mlf:         mlf,
@@ -87,7 +86,7 @@ func Deploy(configuration string, weights string, store storage.Storage, ch chai
 	return
 }
 
-func (mod *ctlImpl) Iterate() (err error) {
+func (mod *modelImpl) Iterate() (err error) {
 
 	weights, err := mod.globalWeights()
 	if err != nil {
@@ -126,7 +125,7 @@ func (mod *ctlImpl) Iterate() (err error) {
 	return
 }
 
-func (mod *ctlImpl) Aggregate() (err error) {
+func (mod *modelImpl) Aggregate() (err error) {
 
 	// load the local udpate addresses from the chain
 	localUpdates, err := mod.chain.LocalUpdates(mod.modelID)
@@ -185,7 +184,7 @@ func (mod *ctlImpl) Aggregate() (err error) {
 	return
 }
 
-func (mod *ctlImpl) Status() (status training.EvaluationResults, err error) {
+func (mod *modelImpl) Evaluate() (evaluation training.EvaluationResults, err error) {
 
 	weights, err := mod.globalWeights()
 	if err != nil {
@@ -193,7 +192,7 @@ func (mod *ctlImpl) Status() (status training.EvaluationResults, err error) {
 	}
 	logger.Debug("Loaded model from network")
 
-	status, err = mod.mlf.Evaluate(mod.modelConfig, weights)
+	evaluation, err = mod.mlf.Evaluate(mod.modelConfig, weights)
 	if err != nil {
 		return
 	}
@@ -202,7 +201,15 @@ func (mod *ctlImpl) Status() (status training.EvaluationResults, err error) {
 	return
 }
 
-func (mod *ctlImpl) globalWeights() (weights string, err error) {
+func (mod *modelImpl) Epoch() (epoch int, err error) {
+	return mod.chain.ModelEpoch(mod.modelID)
+}
+
+func (mod *modelImpl) State() (state uint8, err error) {
+	return mod.chain.State(mod.modelID)
+}
+
+func (mod *modelImpl) globalWeights() (weights string, err error) {
 
 	weightsAddress, err := mod.chain.GlobalWeightsAddress(mod.modelID)
 	if err != nil {
@@ -212,45 +219,6 @@ func (mod *ctlImpl) globalWeights() (weights string, err error) {
 	weights, err = mod.store.Load(weightsAddress)
 	if err != nil {
 		return
-	}
-
-	return
-}
-
-func (mod *ctlImpl) WaitForNewEpoch() (err error) {
-
-	globalEpoch, err := mod.chain.ModelEpoch(mod.modelID)
-	if err != nil {
-		return
-	}
-
-	for mod.localEpoch > globalEpoch {
-
-		time.Sleep(time.Second)
-
-		globalEpoch, err = mod.chain.ModelEpoch(mod.modelID)
-		if err != nil {
-			return err
-		}
-	}
-	return
-}
-
-func (mod *ctlImpl) WaitForAggregation() (err error) {
-
-	ready, err := mod.chain.AggregationReady(mod.modelID)
-	if err != nil {
-		return
-	}
-
-	for !ready {
-
-		time.Sleep(time.Second)
-
-		ready, err = mod.chain.AggregationReady(mod.modelID)
-		if err != nil {
-			return
-		}
 	}
 
 	return

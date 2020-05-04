@@ -10,5 +10,5 @@ type Chain interface {
 	SubmitLocalUpdate(modelID common.ModelIdentifier, updateAddress common.StorageAddress) (err error)
 	LocalUpdates(id common.ModelIdentifier) (updates []common.Update, err error)
 	SubmitAggregation(id common.ModelIdentifier, address common.StorageAddress) (err error)
-	AggregationReady(id common.ModelIdentifier) (ready bool, err error)
+	State(id common.ModelIdentifier) (state uint8, err error)
 }

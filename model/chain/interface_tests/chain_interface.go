@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/FMorsbach/DecFL/model/chain"
+	ch "github.com/FMorsbach/DecFL/model/chain"
 	"github.com/FMorsbach/DecFL/model/common"
 )
 
@@ -20,7 +20,7 @@ func FillAddress() common.StorageAddress {
 
 // TODO: Maybe add tests for wrong modelIds ?
 
-func DeployModelAndReadModel(chain chain.Chain, t *testing.T) {
+func DeployModelAndReadModel(chain ch.Chain, t *testing.T) {
 
 	id, err := chain.DeployModel(
 		testConfigAddress,
@@ -47,7 +47,7 @@ func DeployModelAndReadModel(chain chain.Chain, t *testing.T) {
 	}
 }
 
-func LocalUpdateSubmission(chain chain.Chain, trainerID common.TrainerIdentifier, t *testing.T) {
+func LocalUpdateSubmission(chain ch.Chain, trainerID common.TrainerIdentifier, t *testing.T) {
 
 	modelID, err := chain.DeployModel(
 		testConfigAddress,
@@ -82,7 +82,7 @@ func LocalUpdateSubmission(chain chain.Chain, trainerID common.TrainerIdentifier
 	}
 }
 
-func SubmitAggregationAndAggregation(chain chain.Chain, t *testing.T) {
+func SubmitAggregationAndAggregation(chain ch.Chain, t *testing.T) {
 
 	randomTestAddress1 := FillAddress()
 	randomTestAddress2 := FillAddress()
@@ -120,10 +120,21 @@ func SubmitAggregationAndAggregation(chain chain.Chain, t *testing.T) {
 		id, err := chain.DeployModel(
 			testConfigAddress,
 			testWeightsAddress,
-			common.Hyperparameters{UpdatesTillAggregation: len(testCase.updates)},
+			common.Hyperparameters{
+				UpdatesTillAggregation: len(testCase.updates),
+				Epochs:                 3,
+			},
 		)
 		if err != nil {
 			t.Error(err)
+		}
+
+		for _, update := range testCase.updates {
+
+			err = chain.SubmitLocalUpdate(id, update)
+			if err != nil {
+				t.Error(err)
+			}
 		}
 
 		for _, update := range testCase.updates {
@@ -142,13 +153,16 @@ func SubmitAggregationAndAggregation(chain chain.Chain, t *testing.T) {
 	}
 }
 
-func ModelEpochAndMultipleSuccedingAggregations(chain chain.Chain, t *testing.T) {
+func ModelEpochAndMultipleSuccedingAggregations(chain ch.Chain, t *testing.T) {
 
 	updatesTillAggregation := 3
 	id, err := chain.DeployModel(
 		testConfigAddress,
 		testWeightsAddress,
-		common.Hyperparameters{UpdatesTillAggregation: updatesTillAggregation},
+		common.Hyperparameters{
+			UpdatesTillAggregation: updatesTillAggregation,
+			Epochs:                 2,
+		},
 	)
 	if err != nil {
 		t.Error(err)
@@ -162,6 +176,13 @@ func ModelEpochAndMultipleSuccedingAggregations(chain chain.Chain, t *testing.T)
 	}
 
 	randomTestAddress1 := FillAddress()
+	for i := 0; i < updatesTillAggregation; i++ {
+
+		err = chain.SubmitLocalUpdate(id, randomTestAddress1)
+		if err != nil {
+			t.Error(err)
+		}
+	}
 	for i := 0; i < updatesTillAggregation; i++ {
 
 		err = chain.SubmitAggregation(id, randomTestAddress1)
@@ -178,6 +199,13 @@ func ModelEpochAndMultipleSuccedingAggregations(chain chain.Chain, t *testing.T)
 	}
 
 	randomTestAddress2 := FillAddress()
+	for i := 0; i < updatesTillAggregation; i++ {
+
+		err = chain.SubmitLocalUpdate(id, randomTestAddress2)
+		if err != nil {
+			t.Error(err)
+		}
+	}
 	for i := 0; i < updatesTillAggregation; i++ {
 
 		err = chain.SubmitAggregation(id, randomTestAddress2)
@@ -198,9 +226,10 @@ func ModelEpochAndMultipleSuccedingAggregations(chain chain.Chain, t *testing.T)
 	} else if key != randomTestAddress2 {
 		t.Errorf("Expected %s as GlobalWeightsAddress but got %s", randomTestAddress2, key)
 	}
+
 }
 
-func AggregationReady(chain chain.Chain, t *testing.T) {
+func StateTransitions(chain ch.Chain, t *testing.T) {
 
 	randomTestAddress1 := FillAddress()
 
@@ -229,7 +258,10 @@ func AggregationReady(chain chain.Chain, t *testing.T) {
 		id, err := chain.DeployModel(
 			testConfigAddress,
 			testWeightsAddress,
-			common.Hyperparameters{UpdatesTillAggregation: len(testCase.updates)},
+			common.Hyperparameters{
+				UpdatesTillAggregation: len(testCase.updates),
+				Epochs:                 2,
+			},
 		)
 		if err != nil {
 			t.Error(err)
@@ -237,11 +269,11 @@ func AggregationReady(chain chain.Chain, t *testing.T) {
 
 		for j, update := range testCase.updates {
 
-			ready, err := chain.AggregationReady(id)
+			state, err := chain.State(id)
 			if err != nil {
 				t.Error(err)
-			} else if ready {
-				t.Errorf("Case: %d Was ready after %d updates instead of %d", i, j, len(testCase.updates))
+			} else if state != common.Training {
+				t.Errorf("Case: %d State was %d after %d updates instead of after %d", i, state, j, len(testCase.updates))
 			}
 
 			err = chain.SubmitLocalUpdate(id, update)
@@ -252,11 +284,11 @@ func AggregationReady(chain chain.Chain, t *testing.T) {
 
 		for j, update := range testCase.updates {
 
-			ready, err := chain.AggregationReady(id)
+			state, err := chain.State(id)
 			if err != nil {
 				t.Error(err)
-			} else if !ready {
-				t.Errorf("Case: %d Was not ready after %d updates and %d aggregations", i, len(testCase.updates), j)
+			} else if state != common.Aggregation {
+				t.Errorf("Case: %d State was %d after %d updates and %d aggregations", i, state, len(testCase.updates), j)
 			}
 
 			err = chain.SubmitAggregation(id, update)
@@ -265,17 +297,54 @@ func AggregationReady(chain chain.Chain, t *testing.T) {
 			}
 		}
 
-		ready, err := chain.AggregationReady(id)
+		state, err := chain.State(id)
 		if err != nil {
 			t.Error(err)
-		} else if ready {
+		} else if state != common.Training {
 			t.Errorf("Case: %d Did not reset after %d aggregations", i, len(testCase.updates))
+		}
+
+		for j, update := range testCase.updates {
+
+			state, err := chain.State(id)
+			if err != nil {
+				t.Error(err)
+			} else if state != common.Training {
+				t.Errorf("Case: %d State was %d after %d updates instead of after %d", i, state, j, len(testCase.updates))
+			}
+
+			err = chain.SubmitLocalUpdate(id, update)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+
+		for j, update := range testCase.updates {
+
+			state, err := chain.State(id)
+			if err != nil {
+				t.Error(err)
+			} else if state != common.Aggregation {
+				t.Errorf("Case: %d State was %d after %d updates and %d aggregations", i, state, len(testCase.updates), j)
+			}
+
+			err = chain.SubmitAggregation(id, update)
+			if err != nil {
+				t.Error(err)
+			}
+		}
+
+		state, err = chain.State(id)
+		if err != nil {
+			t.Error(err)
+		} else if state != common.Finished {
+			t.Errorf("Case: %d Expected state %d but got %d", i, common.Finished, state)
 		}
 
 	}
 }
 
-func ResetLocalUpdatesAfterAggregation(chain chain.Chain, t *testing.T) {
+func ResetLocalUpdatesAfterAggregation(chain ch.Chain, t *testing.T) {
 
 	updatesTillAggregation := 2
 	modelID, err := chain.DeployModel(

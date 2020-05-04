@@ -84,6 +84,7 @@ func (c *ethereumChain) DeployModel(configAddress common.StorageAddress, weights
 		string(configAddress),
 		string(weightsAddress),
 		big.NewInt(int64(params.UpdatesTillAggregation)),
+		big.NewInt(int64(params.Epochs)),
 	)
 	if err != nil {
 		return
@@ -227,7 +228,7 @@ func (c *ethereumChain) ModelEpoch(id common.ModelIdentifier) (epoch int, err er
 		return
 	}
 
-	value, err := instance.Epoch(nil)
+	value, err := instance.CurrentEpoch(nil)
 	if err != nil {
 		return
 	}
@@ -236,14 +237,14 @@ func (c *ethereumChain) ModelEpoch(id common.ModelIdentifier) (epoch int, err er
 	return
 }
 
-func (c *ethereumChain) AggregationReady(id common.ModelIdentifier) (ready bool, err error) {
+func (c *ethereumChain) State(id common.ModelIdentifier) (state uint8, err error) {
 
 	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
 	if err != nil {
 		return
 	}
 
-	ready, err = instance.AggregationReady(nil)
+	state, err = instance.State(nil)
 
 	return
 }

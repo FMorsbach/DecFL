@@ -13,4 +13,9 @@ type Update struct {
 
 type Hyperparameters struct {
 	UpdatesTillAggregation int
+	Epochs                 int
 }
+
+const Training uint8 = 0
+const Aggregation uint8 = 1
+const Finished uint8 = 2
