@@ -226,7 +226,6 @@ func ModelEpochAndMultipleSuccedingAggregations(chain ch.Chain, t *testing.T) {
 	} else if key != randomTestAddress2 {
 		t.Errorf("Expected %s as GlobalWeightsAddress but got %s", randomTestAddress2, key)
 	}
-
 }
 
 func StateTransitions(chain ch.Chain, t *testing.T) {
@@ -454,4 +453,37 @@ func Authorization(chain1 ch.Chain, chain2 ch.Chain, trainerID2 common.TrainerId
 			}
 		}
 	}
+}
+
+func StateRejection(chain ch.Chain, t *testing.T) {
+
+	id, err := chain.DeployModel(
+		testConfigAddress,
+		testWeightsAddress,
+		common.Hyperparameters{
+			UpdatesTillAggregation: 1,
+			Epochs:                 2,
+		},
+	)
+	if err != nil {
+		t.Error(err)
+	}
+
+	errorMsg := "VM Exception while processing transaction: revert Not valid at this state"
+
+	err = chain.SubmitAggregation(id, testWeightsAddress)
+	if err.Error() != errorMsg {
+		t.Errorf("Instead got '%s'", err.Error())
+	}
+
+	err = chain.SubmitLocalUpdate(id, testWeightsAddress)
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = chain.SubmitLocalUpdate(id, testWeightsAddress)
+	if err.Error() != errorMsg {
+		t.Errorf("Instead got '%s'", err.Error())
+	}
+
 }

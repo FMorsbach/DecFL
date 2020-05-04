@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 
 	"github.com/FMorsbach/DecFL/model"
 	"github.com/FMorsbach/DecFL/model/common"
 	"github.com/FMorsbach/dlog"
+	ethCommon "github.com/ethereum/go-ethereum/common"
 )
 
 func init() {
@@ -37,6 +39,16 @@ func main() {
 	)
 	if err != nil {
 		dlog.Fatal(err)
+	}
+
+	// Read trainer accounts and add to contract
+	accounts := strings.Split(loadDataFromDisk("accounts.txt"), "\n")
+	for _, acc := range accounts {
+		address := ethCommon.HexToAddress(acc)
+		err := chain.AddTrainer(modelID, common.TrainerIdentifier(address))
+		if err != nil {
+			dlog.Fatal(err)
+		}
 	}
 
 	fmt.Println(string(modelID))

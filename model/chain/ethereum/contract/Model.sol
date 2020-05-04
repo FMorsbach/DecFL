@@ -31,6 +31,12 @@ contract Model {
         _;
     }
 
+    modifier atState(states _state)
+    {
+        require(_state == state, "Not valid at this state");
+        _;
+    }
+
     constructor(
         string memory _configurationAddress,
         string memory _weightsAddress,
@@ -56,16 +62,12 @@ contract Model {
     function submitLocalUpdate(string memory updateAddress)
     public
     isTrainer()
-    returns (bool)
+    atState(states.training)
     {
-
-        if (state != states.training) return false;
-
         localUpdates.push(Submission(msg.sender, updateAddress));
         if (localUpdates.length >= updatesTillAggregation) {
             state = states.aggregation;
         }
-        return true;
     }
 
     // Needed to retrieve all local updates programmatically
@@ -79,11 +81,8 @@ contract Model {
     function submitLocalAggregation(string memory updateAddress)
     public
     isTrainer()
-    returns (bool)
+    atState(states.aggregation)
     {
-
-        if (state != states.aggregation) return false;
-
         aggregationVotes[updateAddress] = aggregationVotes[updateAddress] + 1;
         submittedVotes = submittedVotes + 1;
         votedAddresses.push(updateAddress);
@@ -115,7 +114,5 @@ contract Model {
                 state = states.finished;
             }
         }
-
-        return true;
     }
 }

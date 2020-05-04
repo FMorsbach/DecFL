@@ -6,3 +6,4 @@ go.sum
 worker/scripts
 worker/worker
 model/training/tensorflow/res/*.in
+app/MNIST/accounts.txt

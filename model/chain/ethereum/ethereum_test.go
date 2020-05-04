@@ -74,3 +74,7 @@ func TestResetLocalUpdatesAfterAggregation(t *testing.T) {
 func TestAuthorization(t *testing.T) {
 	interface_tests.Authorization(ethChain2, ethChain, trainerID, t)
 }
+
+func TestStateRejection(t *testing.T) {
+	interface_tests.StateRejection(ethChain, t)
+}

@@ -52,8 +52,10 @@ func main() {
 		switch state {
 		case common.Training:
 			err = model.Iterate()
-			if err != nil {
-				dlog.Fatal(err)
+			if err.Error() == "VM Exception while processing transaction: revert Not valid at this state" {
+				continue
+			} else if err != nil {
+				dlog.Fatalf("Error training: %s", err)
 			}
 			trainings++
 			dlog.Println("Iterated")
@@ -61,8 +63,10 @@ func main() {
 
 		case common.Aggregation:
 			err = model.Aggregate()
-			if err != nil {
-				dlog.Fatal(err)
+			if err.Error() == "VM Exception while processing transaction: revert Not valid at this state" {
+				continue
+			} else if err != nil {
+				dlog.Fatalf("Error aggregating: %s", err)
 			}
 			aggregations++
 			dlog.Println("Aggregated")
