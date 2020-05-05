@@ -38,6 +38,21 @@ func ParseCLIConfig() (chain ch.Chain, store st.Storage, modelID common.ModelIde
 		}
 	}
 
+	chain, store, err = CreateNetwork(chainConnection, storageConnection, storageType, privateKey, redisPassword)
+	if err != nil {
+		return
+	}
+
+	// setup model
+	if modelAddress != "" {
+		modelID = common.ModelIdentifier(modelAddress)
+	}
+
+	return
+}
+
+func CreateNetwork(chainConnection string, storageConnection string, storageType string, privateKey string, redisPassword string) (chain ch.Chain, store st.Storage, err error) {
+
 	chain, err = ethereum.NewEthereum(chainConnection, privateKey)
 	if err != nil {
 		return
@@ -68,11 +83,6 @@ func ParseCLIConfig() (chain ch.Chain, store st.Storage, modelID common.ModelIde
 	default:
 		err = fmt.Errorf("Invalid storage type")
 		return
-	}
-
-	// setup model
-	if modelAddress != "" {
-		modelID = common.ModelIdentifier(modelAddress)
 	}
 
 	return

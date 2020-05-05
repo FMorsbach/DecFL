@@ -59,7 +59,7 @@ func NewEthereum(chainAddress string, key string) (instance chain.Chain, err err
 	}, nil
 }
 
-func (c *ethereumChain) DeployModel(configAddress common.StorageAddress, weightsAddress common.StorageAddress, params common.Hyperparameters) (id common.ModelIdentifier, err error) {
+func (c *ethereumChain) DeployModel(configAddress common.StorageAddress, weightsAddress common.StorageAddress, scriptsAddress common.StorageAddress, params common.Hyperparameters) (id common.ModelIdentifier, err error) {
 
 	nonce, err := c.client.PendingNonceAt(context.Background(), c.publicAddress)
 	if err != nil {
@@ -83,6 +83,7 @@ func (c *ethereumChain) DeployModel(configAddress common.StorageAddress, weights
 		&(c.client),
 		string(configAddress),
 		string(weightsAddress),
+		string(scriptsAddress),
 		big.NewInt(int64(params.UpdatesTillAggregation)),
 		big.NewInt(int64(params.Epochs)),
 	)
@@ -120,6 +121,22 @@ func (c *ethereumChain) GlobalWeightsAddress(id common.ModelIdentifier) (address
 	}
 
 	value, err := instance.WeightsAddress(nil)
+	if err != nil {
+		return
+	}
+
+	address = common.StorageAddress(value)
+	return
+}
+
+func (c *ethereumChain) ScriptsAddress(id common.ModelIdentifier) (address common.StorageAddress, err error) {
+
+	instance, err := contract.NewContract(ethCommon.HexToAddress(string(id)), &(c.client))
+	if err != nil {
+		return
+	}
+
+	value, err := instance.ScriptsAddress(nil)
 	if err != nil {
 		return
 	}

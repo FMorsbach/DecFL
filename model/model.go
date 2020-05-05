@@ -3,8 +3,12 @@ package model
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
+	"path/filepath"
 
 	"github.com/FMorsbach/DecFL/model/chain"
 	"github.com/FMorsbach/DecFL/model/common"
@@ -56,6 +60,43 @@ func NewModel(ch chain.Chain, st storage.Storage, mlf training.MLFramework, mode
 	}
 	logger.Debugf("Loaded model config from storage")
 
+	scriptsAddress, err := ch.ScriptsAddress(modelID)
+	if err != nil {
+		return nil, err
+	}
+
+	scripts, err := st.Load(scriptsAddress)
+	if err != nil {
+		return nil, err
+	}
+	logger.Debugf("Loaded scripts from storage")
+
+	path, exists := os.LookupEnv("DECFL_ROOT")
+	if !exists {
+		logger.Fatal("DECFL_ROOT is not set.")
+	}
+	scriptsArchive := filepath.Join(path, "scripts.tar.gz")
+	err = ioutil.WriteFile(scriptsArchive, []byte(scripts), 0644)
+	if err != nil {
+		return nil, err
+	}
+	logger.Debugf("Wrote scripts to %s", scriptsArchive)
+
+	cmd := exec.Command(
+		"tar",
+		"-xzvf",
+		scriptsArchive,
+		"-C",
+		path,
+	)
+
+	logger.Debugln("Executing: ", cmd.Args)
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		return nil, fmt.Errorf("Could not extract scripts: %s, %s", err, string(out))
+	}
+	logger.Debug(string(out))
+
 	return &modelImpl{
 		chain:       ch,
 		store:       st,
@@ -66,7 +107,7 @@ func NewModel(ch chain.Chain, st storage.Storage, mlf training.MLFramework, mode
 	}, nil
 }
 
-func Deploy(configuration string, weights string, store storage.Storage, ch chain.Chain, params common.Hyperparameters) (modelID common.ModelIdentifier, err error) {
+func Deploy(configuration string, weights string, scripts string, store storage.Storage, ch chain.Chain, params common.Hyperparameters) (modelID common.ModelIdentifier, err error) {
 
 	logger.Debug("Created initial model")
 
@@ -79,9 +120,15 @@ func Deploy(configuration string, weights string, store storage.Storage, ch chai
 	if err != nil {
 		return
 	}
-	logger.Debugf("Wrote initial model to storage at %s and %s", configAddress, weightsAddress)
 
-	modelID, err = ch.DeployModel(configAddress, weightsAddress, params)
+	scriptsAddress, err := store.Store(scripts)
+	if err != nil {
+		return
+	}
+
+	logger.Debugf("Wrote initial model to storage at %s, %s and %s", configAddress, weightsAddress, scriptsAddress)
+
+	modelID, err = ch.DeployModel(configAddress, weightsAddress, scriptsAddress, params)
 	logger.Debug(("Wrote initial model addresses to chain"))
 	return
 }

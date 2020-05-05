@@ -12,6 +12,7 @@ import (
 
 var testConfigAddress common.StorageAddress = FillAddress()
 var testWeightsAddress common.StorageAddress = FillAddress()
+var testScriptsAddress common.StorageAddress = FillAddress()
 
 func FillAddress() common.StorageAddress {
 	rand.Seed(time.Now().UnixNano())
@@ -25,6 +26,7 @@ func DeployModelAndReadModel(chain ch.Chain, t *testing.T) {
 	id, err := chain.DeployModel(
 		testConfigAddress,
 		testWeightsAddress,
+		testScriptsAddress,
 		common.Hyperparameters{UpdatesTillAggregation: 3})
 	if err != nil {
 		t.Error(err)
@@ -45,6 +47,12 @@ func DeployModelAndReadModel(chain ch.Chain, t *testing.T) {
 	} else if key != testWeightsAddress {
 		t.Errorf("Expected %s as GlobalWeightsAddress but got %s", testWeightsAddress, key)
 	}
+
+	if key, err := chain.ScriptsAddress(id); err != nil {
+		t.Error(err)
+	} else if key != testScriptsAddress {
+		t.Errorf("Expected %s as GlobalWeightsAddress but got %s", testScriptsAddress, key)
+	}
 }
 
 func LocalUpdateSubmission(chain ch.Chain, trainerID common.TrainerIdentifier, t *testing.T) {
@@ -52,6 +60,7 @@ func LocalUpdateSubmission(chain ch.Chain, trainerID common.TrainerIdentifier, t
 	modelID, err := chain.DeployModel(
 		testConfigAddress,
 		testWeightsAddress,
+		testScriptsAddress,
 		common.Hyperparameters{UpdatesTillAggregation: 3})
 	if err != nil {
 		t.Error(err)
@@ -120,6 +129,7 @@ func SubmitAggregationAndAggregation(chain ch.Chain, t *testing.T) {
 		id, err := chain.DeployModel(
 			testConfigAddress,
 			testWeightsAddress,
+			testScriptsAddress,
 			common.Hyperparameters{
 				UpdatesTillAggregation: len(testCase.updates),
 				Epochs:                 3,
@@ -159,6 +169,7 @@ func ModelEpochAndMultipleSuccedingAggregations(chain ch.Chain, t *testing.T) {
 	id, err := chain.DeployModel(
 		testConfigAddress,
 		testWeightsAddress,
+		testScriptsAddress,
 		common.Hyperparameters{
 			UpdatesTillAggregation: updatesTillAggregation,
 			Epochs:                 2,
@@ -257,6 +268,7 @@ func StateTransitions(chain ch.Chain, t *testing.T) {
 		id, err := chain.DeployModel(
 			testConfigAddress,
 			testWeightsAddress,
+			testScriptsAddress,
 			common.Hyperparameters{
 				UpdatesTillAggregation: len(testCase.updates),
 				Epochs:                 2,
@@ -349,6 +361,7 @@ func ResetLocalUpdatesAfterAggregation(chain ch.Chain, t *testing.T) {
 	modelID, err := chain.DeployModel(
 		testConfigAddress,
 		testWeightsAddress,
+		testScriptsAddress,
 		common.Hyperparameters{UpdatesTillAggregation: updatesTillAggregation})
 	if err != nil {
 		t.Error(err)
@@ -408,6 +421,7 @@ func Authorization(chain1 ch.Chain, chain2 ch.Chain, trainerID2 common.TrainerId
 		id, err := chain1.DeployModel(
 			testConfigAddress,
 			testWeightsAddress,
+			testScriptsAddress,
 			common.Hyperparameters{
 				UpdatesTillAggregation: 2,
 				Epochs:                 2,
@@ -460,6 +474,7 @@ func StateRejection(chain ch.Chain, t *testing.T) {
 	id, err := chain.DeployModel(
 		testConfigAddress,
 		testWeightsAddress,
+		testScriptsAddress,
 		common.Hyperparameters{
 			UpdatesTillAggregation: 1,
 			Epochs:                 2,

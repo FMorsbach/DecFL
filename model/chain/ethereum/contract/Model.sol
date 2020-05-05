@@ -7,6 +7,7 @@ contract Model {
 
     string public configurationAddress;
     string public weightsAddress;
+    string public scriptsAddress;
 
     uint public current_epoch;
     uint public target_epoch;
@@ -40,11 +41,13 @@ contract Model {
     constructor(
         string memory _configurationAddress,
         string memory _weightsAddress,
+        string memory _scriptsAddress,
         uint _updatesTillAggregation,
         uint _target_epoch) public
     {
         configurationAddress = _configurationAddress;
         weightsAddress = _weightsAddress;
+        scriptsAddress = _scriptsAddress;
         updatesTillAggregation = _updatesTillAggregation;
         current_epoch = 0;
         target_epoch = _target_epoch;
