@@ -1,6 +1,7 @@
-- hosts: snic
+- hosts: "{{ HOST }}"
   vars:
     model: "{{ MODEL }}"
+    chain: "{{ CHAIN }}"
   tasks:
     - name: Run Training
       docker_container:
@@ -10,9 +11,9 @@
         env:
             MODEL: "{{ model }}"
             STORAGE: ipfs:5001
-            CHAIN: http://129.16.123.66:8545
             STORAGE_TYPE: ipfs
-        env_file: /home/ubuntu/app/config
+            CHAIN: "{{ chain }}"
+        env_file: /home/ubuntu/app/key
         networks:
           - name: decfl_net
       become: yes

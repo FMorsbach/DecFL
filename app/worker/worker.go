@@ -4,6 +4,7 @@ import (
 	"time"
 
 	md "github.com/FMorsbach/DecFL/model"
+	"github.com/FMorsbach/DecFL/model/chain/ethereum"
 	"github.com/FMorsbach/DecFL/model/common"
 	"github.com/FMorsbach/DecFL/model/storage"
 	"github.com/FMorsbach/DecFL/model/training/tensorflow"
@@ -14,10 +15,14 @@ var model md.Model
 
 func init() {
 
-	dlog.SetDebug(false)
+	dlog.SetDebug(true)
 	dlog.SetPrefix("Worker: ")
-	md.EnableDebug(false)
-	storage.EnableDebug(false)
+
+	dlog.Debug("Init...")
+
+	md.EnableDebug(true)
+	storage.EnableDebug(true)
+	ethereum.EnableDebug(true)
 
 	chain, store, modelID, err := md.ParseCLIConfig()
 	if err != nil {

@@ -12,7 +12,7 @@ from tensorflow import keras
 def trainModel(config, weights, x_train, y_train):
     model = keras.models.model_from_json(json.dumps(config))
     model.set_weights(weights)
-    model.compile(optimizer='adam',
+    model.compile(optimizer='sgd',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
     model.fit(x_train, y_train, epochs=1)
@@ -36,7 +36,7 @@ def aggregateUpdates(updates):
 def evaluateModel(config, weights):
     model = keras.models.model_from_json(json.dumps(config))
     model.set_weights(weights)
-    model.compile(optimizer='adam',
+    model.compile(optimizer='sgd',
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
 

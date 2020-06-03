@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  worker1:
+    image: "worker:latest"
+    env_file: network.env
+    environment:  
+    - MODEL=${MODEL}
+    - KEY=${KEY1}
+  worker2:
+    image: "worker:latest"
+    env_file: network.env
+    environment:  
+    - MODEL=${MODEL}
+    - KEY=${KEY2}
+  worker3:
+    image: "worker:latest"
+    env_file: network.env
+    environment:  
+      - MODEL=${MODEL}
+      - KEY=${KEY3}
+
+networks:
+  default:
+    external:
+      name: myNet

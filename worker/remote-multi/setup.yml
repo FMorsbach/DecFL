@@ -1,6 +1,0 @@
----
-- hosts: snic
-  tasks:
-    - name: Install docker
-    - name: Install pip
-    - name: Install python-docker module

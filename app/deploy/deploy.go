@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/FMorsbach/DecFL/model"
@@ -13,11 +14,7 @@ import (
 	ethCommon "github.com/ethereum/go-ethereum/common"
 )
 
-func init() {
-	dlog.SetPrefix("MNIST: ")
-	dlog.SetDebug(false)
-	dlog.SetFlags(dlog.Flags() | log.Lshortfile)
-}
+var logger = dlog.New(os.Stderr, "Deploy: ", log.LstdFlags|log.Lshortfile, false)
 
 func main() {
 
@@ -50,13 +47,13 @@ func main() {
 	for _, req := range required {
 		if !seen[req] {
 			err := fmt.Errorf("missing required -%s argument/flag\n", req)
-			dlog.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 
 	chain, store, err := model.CreateNetwork(chainConnection, storageConnection, storageType, privateKey, redisPassword)
 	if err != nil {
-		dlog.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	config := loadDataFromDisk(configFile)
@@ -76,19 +73,19 @@ func main() {
 		},
 	)
 	if err != nil {
-		dlog.Fatal(err)
+		logger.Fatal(err)
 	}
+	fmt.Println(string(modelID))
 
 	// Add allowed trainers to contract
 	for _, acc := range trainers {
 		address := ethCommon.HexToAddress(acc)
 		err := chain.AddTrainer(modelID, common.TrainerIdentifier(address))
 		if err != nil {
-			dlog.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 
-	fmt.Println(string(modelID))
 }
 
 func loadDataFromDisk(file string) (data string) {
@@ -96,9 +93,9 @@ func loadDataFromDisk(file string) (data string) {
 
 	content, err := ioutil.ReadFile(file)
 	if err != nil {
-		dlog.Fatal(err)
+		logger.Fatal(err)
 	}
-	dlog.Debugf("Read %d bytes from %s", len(content), file)
+	logger.Debugf("Read %d bytes from %s", len(content), file)
 
 	data = string(content)
 	return
