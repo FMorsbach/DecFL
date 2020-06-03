@@ -1,7 +1,7 @@
 import sys
 import click
 
-from util import trainModel, getRandomSetOfData, writeUpdatesToDisk, loadModelFromDisk
+from util import trainModel, writeUpdatesToDisk, loadModelFromDisk, getData
 
 
 @click.command()
@@ -12,7 +12,7 @@ def run_standalone(c, w, o):
 
     config, weights = loadModelFromDisk(c, w)
 
-    x_train, y_train = getRandomSetOfData()
+    x_train, y_train = getData()
 
     if x_train is None or y_train is None:
         print("Data could not be loaded, abort.", file=sys.stderr)

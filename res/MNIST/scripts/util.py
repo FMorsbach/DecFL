@@ -58,6 +58,29 @@ def getRandomSetOfData():
     x_train = x_train / 255.0
     return x_train, y_train
 
+def getData():
+    mnist = tf.keras.datasets.mnist
+
+    try:
+        trainer_id = int(os.environ['DECFL_ID'])
+    except KeyError as e:
+        print("Could not read trainer identifier. Error", e, file=sys.stderr)
+        sys.exit(1)
+
+    try:
+        PARTITIONS = int(os.environ['DECFL_PARTITIONS'])
+    except KeyError as e:
+        print("Could not read PARTITIONS. Error", e, file=sys.stderr)
+        sys.exit(1)
+
+    (x_train, y_train), (_, _) = mnist.load_data()
+
+    x_train = [x for x in np.split(x_train, PARTITIONS)][trainer_id]
+    y_train = [y for y in np.split(y_train, PARTITIONS)][trainer_id]
+
+    x_train = x_train / 255.0
+
+    return x_train, y_train
 
 def loadModelFromDisk(c, w):
     config = loadConfigurationFromFile(c)
@@ -142,7 +165,7 @@ def writeUpdatesToDisk(new_weights, output_path):
         with open(output_path, "w") as output_file:
             output_file.write(new_weights)
     except IOError as e:
-        print("Could not write to", output_path, "Error:", e)
+        print("Could not write to", output_path, "Error:", e, file=sys.stderr)
         sys.exit(1)
     print("Saved updated weights to", output_path)
 
