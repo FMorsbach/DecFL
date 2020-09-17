@@ -4,5 +4,6 @@ go.sum
 *retry
 
 app/worker/worker
+app/deploy/deploy
 model/training/tensorflow/res/*.in
 res/secrets/

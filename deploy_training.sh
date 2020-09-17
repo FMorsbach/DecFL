@@ -37,7 +37,7 @@ mv scripts.tar.gz $back/scripts.tar.gz
 cd $back
 
 echo "Deploying to $SCENARIO"
-go run app/deploy/deploy.go \
+./app/deploy/deploy \
 -chain $CHAIN \
 -storage $STORAGE \
 -storageType $STORAGE_TYPE \
