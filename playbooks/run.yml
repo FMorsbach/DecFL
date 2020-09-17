@@ -6,7 +6,7 @@
     - name: Run Training
       docker_container:
         name: worker_{{ model | regex_search('.{6}') }}
-        image: worker:latest
+        image: decfl-worker:latest
         state: started
         env:
             MODEL: "{{ model }}"

@@ -2,7 +2,7 @@ version: '3'
 
 services:
   worker1:
-    image: "worker:latest"
+    image: "decfl-worker:latest"
     env_file: network.env
     environment:  
     - MODEL=${MODEL}
@@ -10,7 +10,7 @@ services:
     - DECFL_ID=0
     - DECFL_PARTITIONS=3
   worker2:
-    image: "worker:latest"
+    image: "decfl-worker:latest"
     env_file: network.env
     environment:  
     - MODEL=${MODEL}
@@ -18,7 +18,7 @@ services:
     - DECFL_ID=1
     - DECFL_PARTITIONS=3
   worker3:
-    image: "worker:latest"
+    image: "decfl-worker:latest"
     env_file: network.env
     environment:  
       - MODEL=${MODEL}
@@ -29,4 +29,4 @@ services:
 networks:
   default:
     external:
-      name: myNet
+      name: decfl-net

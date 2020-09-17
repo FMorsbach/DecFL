@@ -16,7 +16,7 @@
         dest: ~/app/Dockerfile
     - name: build docker image
       docker_image:
-        name: worker
+        name: decfl-worker
         path: /home/ubuntu/app
         state: present
         force: yes

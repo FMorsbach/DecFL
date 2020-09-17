@@ -1,11 +1,11 @@
 #!/bin/bash
 
-while getopts a:n: option
+while getopts a:s: option
 do
 case "${option}"
 in
 a) APP=${OPTARG};;
-n) NETWORK=${OPTARG};;
+s) SCENARIO=${OPTARG};;
 esac
 done
 
@@ -16,17 +16,17 @@ then
     exit 1
 fi
 
-if [ -z "$NETWORK" ];
+if [ -z "$SCENARIO" ];
 then
-    echo "You need to specify a valid network configuration with -n"
+    echo "You need to specify a valid scenario with -s"
     exit 1
 fi
 
-CHAIN=$(cat ../res/secrets/$NETWORK/chain)
-STORAGE=$(cat ../res/secrets/$NETWORK/storage)
-STORAGE_TYPE=$(cat ../res/secrets/$NETWORK/storage_type)
-KEY=$(cat ../res/secrets/$NETWORK/deploy_key)
-TRAINERS=../res/secrets/$NETWORK/trainers
+CHAIN=$(cat scenarios/$SCENARIO/chain)
+STORAGE=$(cat scenarios/$SCENARIO/storage)
+STORAGE_TYPE=$(cat scenarios/$SCENARIO/storage_type)
+KEY=$(cat scenarios/$SCENARIO/deploy_key)
+TRAINERS=scenarios/$SCENARIO/trainers
 
 
 echo "Packing scripts"
@@ -36,8 +36,8 @@ tar -czvf scripts.tar.gz scripts > /dev/null
 mv scripts.tar.gz $back/scripts.tar.gz
 cd $back
 
-echo "Deploying to network"
-go run ../app/deploy/deploy.go \
+echo "Deploying to $SCENARIO"
+go run app/deploy/deploy.go \
 -chain $CHAIN \
 -storage $STORAGE \
 -storageType $STORAGE_TYPE \
