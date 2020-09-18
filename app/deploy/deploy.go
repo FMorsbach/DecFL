@@ -75,12 +75,13 @@ func main() {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	fmt.Println(string(modelID))
+	fmt.Println("Contract ID: " + string(modelID))
 
 	// Add allowed trainers to contract
 	for _, acc := range trainers {
 		address := ethCommon.HexToAddress(acc)
 		err := chain.AddTrainer(modelID, common.TrainerIdentifier(address))
+		logger.Debugln("Added " + string(acc) + " as trainer")
 		if err != nil {
 			logger.Fatal(err)
 		}

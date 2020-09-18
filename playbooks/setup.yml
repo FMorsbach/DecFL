@@ -1,0 +1,25 @@
+- hosts: all
+  tasks:
+    - name: Setup network
+      docker_network:
+        name: decfl_net
+        state: present
+      become: yes
+    - name: Volume for IPFS
+      docker_volume:
+        name: ipfs-data
+      become: yes
+    - name: Setup IPFS
+      docker_container:
+        name: ipfs
+        image: ipfs/go-ipfs:latest
+        state: started
+        volumes:
+          - ipfs-data:/data/ipfs
+        ports:
+          - "4001:4001"
+          - "127.0.0.1:5001:5001"
+          - "127.0.0.1:8080:8080"
+        networks:
+          - name: decfl_net
+      become: yes

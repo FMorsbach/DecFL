@@ -29,4 +29,4 @@ services:
 networks:
   default:
     external:
-      name: decfl-net
+      name: decfl_net

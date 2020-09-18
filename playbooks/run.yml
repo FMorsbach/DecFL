@@ -1,4 +1,4 @@
-- hosts: "{{ HOST }}"
+- hosts: all
   vars:
     model: "{{ MODEL }}"
     chain: "{{ CHAIN }}"
@@ -13,7 +13,7 @@
             STORAGE: ipfs:5001
             STORAGE_TYPE: ipfs
             CHAIN: "{{ chain }}"
-        env_file: /home/ubuntu/app/key
+        env_file: /home/ubuntu/app/identity
         networks:
           - name: decfl_net
       become: yes

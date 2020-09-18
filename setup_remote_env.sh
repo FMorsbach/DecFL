@@ -14,4 +14,7 @@ then
     exit 1
 fi
 
-ansible-playbook remote/deploy.yml -e HOST=$SCENARIO
+
+ansible-playbook -i scenarios/$SCENARIO/hosts playbooks/setup.yml
+ansible-playbook -i scenarios/$SCENARIO/hosts playbooks/deploy.yml
+

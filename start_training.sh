@@ -24,11 +24,14 @@ fi
 if [ "$SCENARIO" == "local" ];
 then
     cd scenarios/local
-
     sudo MODEL=$CONTRACT docker-compose up
 else
     CHAIN=$(cat scenarios/$SCENARIO/chain)
-    ansible-playbook remote/run.yml -e CHAIN=$CHAIN -e MODEL=$CONTRACT -e HOST=$HOST
+    ansible-playbook \
+        -i scenarios/$SCENARIO/hosts \
+        -e CHAIN=$CHAIN \
+        -e MODEL=$CONTRACT \
+        playbooks/run.yml 
 fi
 
     

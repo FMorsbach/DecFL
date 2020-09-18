@@ -22,9 +22,16 @@ then
     exit 1
 fi
 
+if [ "$SCENARIO" == "local" ];
+then
+    STORAGE_TYPE=redis
+    STORAGE=$(cat scenarios/$SCENARIO/storage)
+else
+    STORAGE_TYPE=ipfs
+    STORAGE=$(cat scenarios/$SCENARIO/deploy_storage)
+fi
+
 CHAIN=$(cat scenarios/$SCENARIO/chain)
-STORAGE=$(cat scenarios/$SCENARIO/storage)
-STORAGE_TYPE=$(cat scenarios/$SCENARIO/storage_type)
 KEY=$(cat scenarios/$SCENARIO/deploy_key)
 TRAINERS=scenarios/$SCENARIO/trainers
 
