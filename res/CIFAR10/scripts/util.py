@@ -75,8 +75,8 @@ def getData():
 
     (x_train, y_train), (_, _) = cifar10.load_data()
 
-    x_train = [x for x in np.split(x_train, PARTITIONS)][trainer_id]
-    y_train = [y for y in np.split(y_train, PARTITIONS)][trainer_id]
+    x_train = [x for x in np.array_split(x_train, PARTITIONS)][trainer_id]
+    y_train = [y for y in np.array_split(y_train, PARTITIONS)][trainer_id]
 
     x_train = x_train / 255.0
 
