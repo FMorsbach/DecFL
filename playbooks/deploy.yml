@@ -17,7 +17,10 @@
     - name: build docker image
       docker_image:
         name: decfl-worker
-        path: /home/ubuntu/app
+        build:
+          path: /home/ubuntu/app
+          pull: yes
         state: present
-        force: yes
+        source: build
+        force_source: yes
       become: yes

@@ -1,4 +1,7 @@
-FROM tensorflow/tensorflow:latest-py3
+FROM tensorflow/tensorflow:2.3.1
+
+# Preload dataset
+RUN python3 -c "import tensorflow as tf; tf.keras.datasets.cifar10.load_data()"
 
 WORKDIR /app
 ENV DECFL_ROOT /app
@@ -14,4 +17,4 @@ ENV DECFL_RES /app/res
 
 COPY worker /app/worker
 
-ENTRYPOINT ./worker -c $CHAIN -s $STORAGE -k $KEY -m $MODEL -storageType $STORAGE_TYPE
+CMD /app/worker -c ${CHAIN} -s ${STORAGE} -k ${KEY} -m ${MODEL} -storageType ${STORAGE_TYPE}

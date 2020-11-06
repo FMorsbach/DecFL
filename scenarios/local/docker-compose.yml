@@ -8,7 +8,6 @@ services:
     - MODEL=${MODEL}
     - KEY=${KEY1}
     - DECFL_ID=0
-    - DECFL_PARTITIONS=3
   worker2:
     image: "decfl-worker:latest"
     env_file: network.env
@@ -16,7 +15,6 @@ services:
     - MODEL=${MODEL}
     - KEY=${KEY2}
     - DECFL_ID=1
-    - DECFL_PARTITIONS=3
   worker3:
     image: "decfl-worker:latest"
     env_file: network.env
@@ -24,7 +22,6 @@ services:
       - MODEL=${MODEL}
       - KEY=${KEY3}
       - DECFL_ID=2
-      - DECFL_PARTITIONS=3
 
 networks:
   default:
