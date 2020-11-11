@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
 	"github.com/FMorsbach/DecFL/model/chain"
 	"github.com/FMorsbach/DecFL/model/common"
@@ -35,6 +36,10 @@ type modelImpl struct {
 }
 
 var logger = dlog.New(os.Stderr, "Model: ", log.LstdFlags, false)
+var logB = log.New(os.Stdout, "BENCH: ", log.LstdFlags|log.Lmsgprefix)
+var start time.Time
+
+const LOAD_WEIGHTS_ADDRESS int = 0
 
 func EnableDebug(b bool) {
 	logger.SetDebug(b)
@@ -142,45 +147,56 @@ func (mod *modelImpl) Iterate() (err error) {
 	logger.Debug("Loaded model from network")
 
 	// train locally
+	start = time.Now()
 	localUpdate, err := mod.mlf.Train(mod.modelConfig, weights)
 	if err != nil {
 		return
 	}
 	logger.Debug("Trained local model")
+	logB.Printf("TRAIN_MODEL %.3f\n", time.Since(start).Seconds())
 
+	start = time.Now()
 	eval, err := mod.mlf.Evaluate(mod.modelConfig, localUpdate)
 	if err != nil {
 		return
 	}
+	logB.Printf("EVALUATE_MODEL %.3f\n", time.Since(start).Seconds())
 
+	start = time.Now()
 	// write the update to the storage
 	updateAddress, err := mod.store.Store(localUpdate)
 	if err != nil {
 		return
 	}
 	logger.Debugf("Wrote local update to storage at %s", updateAddress)
+	logB.Printf("STORE_TRAINING_UPDATE %.3f\n", time.Since(start).Seconds())
 
 	logger.Printf("LOCAL TRAINING: %s with %f Accuracy\n", string(updateAddress)[0:6], eval.Accuracy)
 
 	// write the address of the stored update to the chain
+	start = time.Now()
 	err = mod.chain.SubmitLocalUpdate(mod.modelID, updateAddress)
 	if err != nil {
 		return
 	}
 	logger.Debug("Wrote local update address to chain")
+	logB.Printf("SUBMIT_TRAINING_UPDATE %.3f\n", time.Since(start).Seconds())
 
 	return
 }
 
 func (mod *modelImpl) Aggregate() (err error) {
 
+	start = time.Now()
 	// load the local udpate addresses from the chain
 	localUpdates, err := mod.chain.LocalUpdates(mod.modelID)
 	if err != nil {
 		return
 	}
 	logger.Debug("Loaded update addresses from chain")
+	logB.Printf("LOAD_AGGREGATION_WEIGHTS_ADDRESSES %.3f\n", time.Since(start).Seconds())
 
+	start = time.Now()
 	// load the local updates from storage
 	updates := make([]string, len(localUpdates))
 	for i, localUpdate := range localUpdates {
@@ -190,6 +206,7 @@ func (mod *modelImpl) Aggregate() (err error) {
 		}
 	}
 	logger.Debug("Loaded updates from storage")
+	logB.Printf("DOWNLOAD_AGGREGATION_WEIGHTS %.3f\n", time.Since(start).Seconds())
 
 	updateHashes := make([]string, len(localUpdates))
 	for i, update := range updates {
@@ -198,33 +215,41 @@ func (mod *modelImpl) Aggregate() (err error) {
 	}
 	logger.Printf("AGGREGATING: %s\n", updateHashes)
 
+	start = time.Now()
 	// aggregate the local updates
 	globalWeights, err := mod.mlf.Aggregate(updates)
 	if err != nil {
 		return
 	}
 	logger.Debug("Aggregated updates")
+	logB.Printf("AGGREGATE_MODELS %.3f\n", time.Since(start).Seconds())
 
+	start = time.Now()
 	eval, err := mod.mlf.Evaluate(mod.modelConfig, globalWeights)
 	if err != nil {
 		return
 	}
+	logB.Printf("EVALUTE_MODEL %.3f\n", time.Since(start).Seconds())
 
+	start = time.Now()
 	// write the new global weights to storage
 	globalWeightsAddress, err := mod.store.Store(globalWeights)
 	if err != nil {
 		return
 	}
 	logger.Debugf("Wrote new weights to storage at %s", globalWeightsAddress)
+	logB.Printf("STORE_AGGREGATION_CANDIDATE %.3f\n", time.Since(start).Seconds())
 
 	logger.Printf("AGGREGATION: %s with %f Accuracy\n", string(globalWeightsAddress)[0:6], eval.Accuracy)
 
+	start = time.Now()
 	// write the new global weights storage address to the chain
 	err = mod.chain.SubmitAggregation(mod.modelID, globalWeightsAddress)
 	if err != nil {
 		return
 	}
 	logger.Debug("Wrote new weight address to chain")
+	logB.Printf("SUBMIT_AGGREGATION_CANDIDATE %.3f\n", time.Since(start).Seconds())
 
 	mod.localEpoch++
 
@@ -258,15 +283,19 @@ func (mod *modelImpl) State() (state uint8, err error) {
 
 func (mod *modelImpl) globalWeights() (weights string, err error) {
 
+	start = time.Now()
 	weightsAddress, err := mod.chain.GlobalWeightsAddress(mod.modelID)
 	if err != nil {
 		return
 	}
+	logB.Printf("LOAD_WEIGHT_ADDRESS %.3f\n", time.Since(start).Seconds())
 
+	start = time.Now()
 	weights, err = mod.store.Load(weightsAddress)
 	if err != nil {
 		return
 	}
+	logB.Printf("DOWNLOAD_WEIGHTS %.3f\n", time.Since(start).Seconds())
 
 	return
 }
