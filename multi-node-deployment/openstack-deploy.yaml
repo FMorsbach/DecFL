@@ -26,7 +26,7 @@
 
   - name: Wait to be sure ssh is available
     pause:
-      seconds: 3
+      seconds: 30
       
   - name: create inventory file
     copy:
