@@ -16,7 +16,7 @@ scrape_configs:
 
     static_configs:
 
-      - targets: ['fedn_cadvisor:8080']
+      - targets: ['decfl_cadvisor:8080']
  
 
   - job_name: 'node-exporter'
@@ -29,4 +29,4 @@ scrape_configs:
 
     static_configs:
 
-            - targets: ['fedn_node_exporter:9100']
+            - targets: ['decfl_node_exporter:9100']
