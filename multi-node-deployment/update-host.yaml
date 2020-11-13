@@ -30,12 +30,19 @@
   - name: Install Docker Module for Python
     pip:
       name: docker
-
+ 
+  - name: Install docker-compose
+    remote_user: ubuntu
+    get_url: 
+      url : https://github.com/docker/compose/releases/download/1.27.0/docker-compose-Linux-x86_64
+      dest: /usr/local/bin/docker-compose
+      mode: 'u+x,g+x'    
+      
   - name: Get DecFL repo
     git:
       repo: https://github.com/FMorsbach/DecFL.git
       dest: /home/ubuntu/DecFL
-      
+      version: multi-node-deployment  
   - name: create ID file   
     copy: 
       content: |
@@ -47,3 +54,9 @@
       group: ubuntu
       mode: 0644
     with_dict: "{{vms}}"
+
+  - name: start monitoring containers
+    shell: cd /home/ubuntu/DecFL/multi-node-deployment/monitoring; docker-compose -f docker-compose.yaml up --build
+    async: 259200
+    poll: 0 
+
