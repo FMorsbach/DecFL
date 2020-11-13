@@ -3,7 +3,7 @@ version: '3.7'
 services:
 
   cadvisor: 
-    container_name: fedn_cadvisor  
+    container_name: DecFL_cadvisor  
     image: google/cadvisor:latest
     #ports: 
     #  - 7001:8080 
@@ -15,7 +15,7 @@ services:
       - /dev/disk/:/dev/disk:ro
     
   node_exporter:
-    container_name: fedn_node_exporter
+    container_name: DecFL_node_exporter
     image: prom/node-exporter
     #ports:
     #  - 9100:9100
@@ -23,7 +23,7 @@ services:
   prometheus:
     environment:
       GET_HOSTS_FROM: dns      
-    container_name: fedn_prometheus       
+    container_name: DecFL_prometheus       
     image: prom/prometheus:v2.14.0
     #ports:
     #  - 9090:9090
