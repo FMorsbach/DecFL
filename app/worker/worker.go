@@ -75,7 +75,7 @@ func main() {
 
 			start = time.Now()
 			waitForStateTransitionFrom(state)
-			logB.Printf("WAITING_AFTER_TRAINING %d %.3f\n", trainings, time.Since(start).Seconds())
+			logB.Printf("WAITING_AFTER_TRAINING %d %.3f\n", trainings-1, time.Since(start).Seconds())
 
 		case common.Aggregation:
 			start = time.Now()
@@ -91,7 +91,7 @@ func main() {
 
 			start = time.Now()
 			waitForStateTransitionFrom(state)
-			logB.Printf("WAITING_AFTER_AGGREGATION %.3f\n", time.Since(start).Seconds())
+			logB.Printf("WAITING_AFTER_AGGREGATION %d %.3f\n", aggregations-1, time.Since(start).Seconds())
 		}
 	}
 
