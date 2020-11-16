@@ -1,7 +1,8 @@
 FROM tensorflow/tensorflow:2.3.1
 
-# Preload dataset
+# Preload datasets
 RUN python3 -c "import tensorflow as tf; tf.keras.datasets.cifar10.load_data()"
+RUN python3 -c "import tensorflow as tf; tf.keras.datasets.mnist.load_data()"
 
 WORKDIR /app
 ENV DECFL_ROOT /app
