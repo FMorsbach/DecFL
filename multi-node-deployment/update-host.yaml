@@ -47,9 +47,9 @@
     copy: 
       content: |
         KEY= {{item.value}}
-        DECFL_PARTITIONS=
-        DECFL_ID=
-      dest: "/home/ubuntu/DecFL/app/identity"
+        DECFL_PARTITIONS=3
+        DECFL_ID=1
+      dest: "/home/ubuntu/app/identity"
       owner: ubuntu
       group: ubuntu
       mode: 0644
