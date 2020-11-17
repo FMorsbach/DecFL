@@ -1,6 +1,6 @@
 Steps to deploy Openstack based multi-node environment using Ansible 
 
-0 - The script assumes following home directory path:
+0 - The script assumes the following home directory path:
 
 /home/ubuntu/DecFL
 
@@ -26,12 +26,14 @@ $ ssh-add -k ~/.ssh/private-key
 
 $ source ./openstack.rc
 
-6 - Open the "list.ymal" file and set the number of machines you want to setup and the private keys.
+6 - create a key.txt file in the "~/DecFL/multi-node-deployment". The file need to contain the ethereum private keys (one per line).
 
-7 - Run the Ansible playbook. 
+7 - Run gen_vars.py, "python3 gen_vars.py <number of VMs you want to start>" for example "python3 gen_vars.py 2" 
+
+8 - Run the Ansible playbook. 
 
 $ ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook decfl_deploy.yaml
 
-8 - The deployment script will setup new VMs, install Docker and create an indentity file "~/app/identity" on each newly created VM. 
+9 - The deployment script will setup new VMs, install Docker and create an indentity file "~/app/identity" on each newly created VM. 
  
-9 - The deployment will generate a new inventory file "inventory_file" in the same directory based on the newly started VMs.
+10 - The deployment will generate a new inventory file "inventory_file" in the same directory based on the newly started VMs.
