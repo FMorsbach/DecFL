@@ -42,18 +42,37 @@
     git:
       repo: https://github.com/FMorsbach/DecFL.git
       dest: /home/ubuntu/DecFL
-      version: multi-node-deployment  
-  - name: create ID file   
+      version: multi-node-deployment
+
+  - name: create directory app
+    file:
+      path: /home/ubuntu/app
+      state: directory
+
+  - name: create identity file   
     copy: 
       content: |
-        KEY= {{item.value}}
-        DECFL_PARTITIONS=3
-        DECFL_ID=1
+        KEY= {{item.p_key}}
+        DECFL_PARTITIONS= {{item.partitions}}
+        DECFL_ID= {{item.id}}
       dest: "/home/ubuntu/app/identity"
       owner: ubuntu
       group: ubuntu
       mode: 0644
-    with_dict: "{{vms}}"
+    with_items: "{{vms.vms}}"
+  
+  - name: create docker deamon file
+    copy:
+      content: |
+        {
+          "mtu": 1450
+        }
+      dest: "/etc/docker/daemon.json"
+  
+  - name: restart docker service    
+    service: 
+      name: docker
+      state: restarted 
 
   - name: start monitoring containers
     shell: cd /home/ubuntu/DecFL/multi-node-deployment/monitoring; docker-compose -f docker-compose.yaml up --build
