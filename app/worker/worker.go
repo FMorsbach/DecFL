@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+	"os"
 	"time"
 
 	md "github.com/FMorsbach/DecFL/model"
@@ -12,6 +14,9 @@ import (
 )
 
 var model md.Model
+
+var logB = log.New(os.Stdout, "BENCH: ", log.LstdFlags|log.Lmsgprefix)
+var start time.Time
 
 func init() {
 
@@ -56,6 +61,8 @@ func main() {
 
 		switch state {
 		case common.Training:
+
+			start = time.Now()
 			err = model.Iterate()
 			if err != nil {
 				if err.Error() == "VM Exception while processing transaction: revert Not valid at this state" {
@@ -63,10 +70,15 @@ func main() {
 				}
 				dlog.Fatalf("Error training: %s", err)
 			}
+			logB.Printf("TRAINING_ROUND %d %.3f\n", trainings, time.Since(start).Seconds())
 			trainings++
+
+			start = time.Now()
 			waitForStateTransitionFrom(state)
+			logB.Printf("WAITING_AFTER_TRAINING %d %.3f\n", trainings-1, time.Since(start).Seconds())
 
 		case common.Aggregation:
+			start = time.Now()
 			err = model.Aggregate()
 			if err != nil {
 				if err.Error() == "VM Exception while processing transaction: revert Not valid at this state" {
@@ -74,8 +86,12 @@ func main() {
 				}
 				dlog.Fatalf("Error aggregating: %s", err)
 			}
+			logB.Printf("AGGREGATION_ROUND %d %.3f\n", aggregations, time.Since(start).Seconds())
 			aggregations++
+
+			start = time.Now()
 			waitForStateTransitionFrom(state)
+			logB.Printf("WAITING_AFTER_AGGREGATION %d %.3f\n", aggregations-1, time.Since(start).Seconds())
 		}
 	}
 
