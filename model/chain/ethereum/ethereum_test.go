@@ -17,7 +17,7 @@ var trainerID common.TrainerIdentifier
 
 func init() {
 
-	key := "3b3a098805d048bab52b82b8767da2117af104cc97ec820acbe1b63e768ebba7"
+	key := "47890574e4835892e0de116ccc144d134027ceba239789c84e58b47fde50e6ca"
 	privateKey, err := crypto.HexToECDSA(key)
 	if err != nil {
 		return
@@ -38,7 +38,7 @@ func init() {
 
 	ethChain2, err = NewEthereum(
 		"http://localhost:8545",
-		"ea7e514344e7495c942cf559cbff1954abbac43f45df04608ded63ab5af82f5c",
+		"9887d8fa8f3d50d2d044beaf72e1fa15d23c9b79fa3cd81426a35cd424106100",
 	)
 
 	if err != nil {
