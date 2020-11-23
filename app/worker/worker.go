@@ -48,7 +48,7 @@ func init() {
 
 func main() {
 
-	dlog.Print("Start working...")
+	dlog.Println("Start working...")
 	trainings := 0
 	aggregations := 0
 

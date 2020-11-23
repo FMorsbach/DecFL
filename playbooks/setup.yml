@@ -14,7 +14,7 @@
         name: ipfs
         image: ipfs/go-ipfs:latest
         state: started
-        container_default_behavior: compatibility
+#        container_default_behavior: compatibility
         volumes:
           - ipfs-data:/data/ipfs
         ports:
