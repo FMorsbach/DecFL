@@ -1,0 +1,57 @@
+- name: Launch a compute instance
+  hosts: localhost
+  tasks:
+  - name: vars
+    include_vars:
+      file: list.yaml
+      name: vms        
+  - name: Launch a VM
+    os_server:
+      image: Ubuntu 18.04 LTS (Bionic Beaver) - latest
+      name: "{{ item.name }}"
+      key_name: deployment
+      availability_zone: nova
+      flavor: ssc.small
+      state: present
+      network: SNIC 2019/10-43 Internal IPv4 Network
+    register: my_vm
+    with_items: "{{vms.vms}}"
+     
+  - name: Add VM to inventory
+    add_host:
+      name: "{{ item.server.name }}"
+      groups: openstack_vms
+      ansible_host: "{{ item.server.private_v4 }}"
+    with_items: "{{ my_vm.results }}"
+
+  - name: Wait to be sure ssh is available
+    pause:
+      seconds: 30
+      
+  - name: create inventory file
+    copy:
+      content: |
+        #[master]
+        #localhost ansible_connection=local
+        [servers:vars]
+        ansible_ssh_private_key_file=/home/ubuntu/.ssh/deployment
+        [servers]
+      dest: "inventory_file"
+      owner: ubuntu
+      group: ubuntu
+      mode: 0644
+
+  - name: add new hosts
+    lineinfile: 
+      path: "inventory_file"
+      line: "{{item.server.name}} ansible_host={{item.server.private_v4}}"
+    with_items: "{{ my_vm.results }}"  
+
+ #- name: Copy inventory file to the hosts
+ #  copy:
+ #    content: "{{item.}}"
+ #    dest: "/home/ubuntu/DecFL/deploy_key"
+ #    owner: ubuntu
+ #    group: ubuntu
+ #    mode: 0644
+ #  with_dict: "{{vms}}"

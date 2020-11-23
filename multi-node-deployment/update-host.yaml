@@ -1,0 +1,81 @@
+- hosts: openstack_vms
+  user: ubuntu
+  become: true
+  tasks:
+  - name: Add variables
+    include_vars:
+      file: list.yaml
+      name: vms  
+   
+  - name: Install aptitude using apt
+    apt: name=aptitude state=latest update_cache=yes force_apt_get=yes
+
+  - name: Install required system packages
+    apt: name={{ item }} state=latest update_cache=yes
+    loop: [ 'apt-transport-https', 'ca-certificates', 'curl', 'software-properties-common', 'python3-pip', 'virtualenv', 'python3-setuptools']
+
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add Docker Repository
+    apt_repository:
+      repo: deb https://download.docker.com/linux/ubuntu bionic stable
+      state: present
+
+  - name: Update apt and install docker-ce
+    apt: update_cache=yes name=docker-ce state=latest
+
+  - name: Install Docker Module for Python
+    pip:
+      name: docker
+ 
+  - name: Install docker-compose
+    remote_user: ubuntu
+    get_url: 
+      url : https://github.com/docker/compose/releases/download/1.27.0/docker-compose-Linux-x86_64
+      dest: /usr/local/bin/docker-compose
+      mode: 'u+x,g+x'    
+      
+  - name: Get DecFL repo
+    git:
+      repo: https://github.com/FMorsbach/DecFL.git
+      dest: /home/ubuntu/DecFL
+      version: multi-node-deployment
+
+  - name: create directory app
+    file:
+      path: /home/ubuntu/app
+      state: directory
+
+  - name: create identity file   
+    copy: 
+      content: |
+        KEY= {{item.p_key}}
+        DECFL_PARTITIONS= {{item.partitions}}
+        DECFL_ID= {{item.id}}
+      dest: "/home/ubuntu/app/identity"
+      owner: ubuntu
+      group: ubuntu
+      mode: 0644
+    with_items: "{{vms.vms}}"
+  
+  - name: create docker deamon file
+    copy:
+      content: |
+        {
+          "mtu": 1450
+        }
+      dest: "/etc/docker/daemon.json"
+  
+  - name: restart docker service    
+    service: 
+      name: docker
+      state: restarted 
+
+  - name: start monitoring containers
+    shell: cd /home/ubuntu/DecFL/multi-node-deployment/monitoring; docker-compose -f docker-compose.yaml up --build
+    async: 259200
+    poll: 0 
+
