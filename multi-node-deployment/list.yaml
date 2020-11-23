@@ -1,4 +1,6 @@
 ---
-vm1: 2321
-vm2: 4322
-vm3: 3232
+vms:
+  - name: vm234
+    partitions: 1
+    p_key: 123456
+    id: 0

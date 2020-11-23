@@ -42,8 +42,8 @@
     git:
       repo: https://github.com/FMorsbach/DecFL.git
       dest: /home/ubuntu/DecFL
-      version: multi-node-deployment
-
+      #version: multi-node-deployment
+      version: master
   - name: create directory app
     file:
       path: /home/ubuntu/app
