@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/big"
 	"os"
+	"time"
 
 	"github.com/FMorsbach/DecFL/model/chain"
 	"github.com/FMorsbach/DecFL/model/chain/ethereum/contract"
@@ -29,6 +30,25 @@ type ethereumChain struct {
 	privateKey    ecdsa.PrivateKey
 	publicKey     ecdsa.PublicKey
 	publicAddress ethCommon.Address
+}
+
+func (c *ethereumChain) waitForTransaction(hash ethCommon.Hash) error {
+
+	for {
+		time.Sleep(5 * time.Second)
+
+		_, isPending, err := c.client.TransactionByHash(context.Background(), hash)
+		if err != nil {
+			panic(err)
+			return err
+		} else if !isPending {
+			break
+		} else {
+			logger.Debugln("Still pending transactions, sleeping for 5 second.")
+		}
+	}
+
+	return nil
 }
 
 func NewEthereum(chainAddress string, key string) (instance chain.Chain, err error) {
@@ -87,6 +107,11 @@ func (c *ethereumChain) DeployModel(configAddress common.StorageAddress, weights
 		big.NewInt(int64(params.UpdatesTillAggregation)),
 		big.NewInt(int64(params.Epochs)),
 	)
+	if err != nil {
+		return
+	}
+
+	err = c.waitForTransaction(tx.Hash())
 	if err != nil {
 		return
 	}
@@ -171,8 +196,15 @@ func (c *ethereumChain) SubmitAggregation(id common.ModelIdentifier, address com
 
 	tx, err := instance.SubmitLocalAggregation(auth, string(address))
 	if err != nil {
+		panic(err)
 		return
 	}
+
+	err = c.waitForTransaction(tx.Hash())
+	if err != nil {
+		return
+	}
+
 
 	logger.Debugf("Wrote local update to chain as tx: %s", tx.Hash().Hex())
 	return
@@ -203,6 +235,11 @@ func (c *ethereumChain) SubmitLocalUpdate(id common.ModelIdentifier, updateAddre
 	auth.GasPrice = gasPrice
 
 	tx, err := instance.SubmitLocalUpdate(auth, string(updateAddress))
+	if err != nil {
+		return
+	}
+
+	err = c.waitForTransaction(tx.Hash())
 	if err != nil {
 		return
 	}
@@ -295,6 +332,11 @@ func (c *ethereumChain) AddTrainer(id common.ModelIdentifier, trainer common.Tra
 		return
 	}
 
-	logger.Debugf("Wrote local update to chain as tx: %s", tx.Hash().Hex())
+	err = c.waitForTransaction(tx.Hash())
+	if err != nil {
+		return
+	}
+
+	logger.Debugf("Added trainer to contract as tx: %s", tx.Hash().Hex())
 	return
 }

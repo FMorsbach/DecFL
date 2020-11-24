@@ -5,9 +5,10 @@
     experiment: "{{ EXPERIMENT }}"
   tasks:
     - name: Get docker output
-      shell: sudo docker logs worker_{{ model | regex_search('.{6}') }} 2> /home/ubuntu/app/log
+      shell: sudo docker logs worker_{{ model | regex_search('.{6}') }} 2>/dev/null > /home/ubuntu/app/log
 
     - name: Copy logs to host
       fetch:
         src: /home/ubuntu/app/log
         dest: ../benchmarks/logs/{{ experiment }}_{{ size }}_{{ inventory_hostname[2:] }}
+        flat: yes

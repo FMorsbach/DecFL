@@ -29,8 +29,8 @@ then
     go build
     cd ../worker
 else
-    sudo docker run --rm -v "$PWD/../../":/usr/src -w /usr/src/app/worker golang:1.15 go build
-    sudo docker run --rm -v "$PWD/../../":/usr/src -w /usr/src/app/deploy golang:1.15 go build
+    sudo docker run --rm -v go_build_path:/go -v go_build_cache:/root/.cache/go-build -v "$PWD/../../":/usr/src -w /usr/src/app/worker golang:1.15 go build -v 
+    sudo docker run --rm -v go_build_path:/go -v go_build_cache:/root/.cache/go-build -v "$PWD/../../":/usr/src -w /usr/src/app/deploy golang:1.15 go build -v 
 fi
 
 echo ""
